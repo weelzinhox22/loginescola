@@ -89,6 +89,9 @@ try {
   console.log('Criando arquivo _redirects específico do Netlify...');
   const redirectsContent = `
 # Arquivo de redirecionamento específico do Netlify
+# Redirecionar páginas com o texto indesejado para raiz
+/Sistema* / 301!
+# SPA fallback
 /* /index.html 200
 `;
   fs.writeFileSync(path.join(process.cwd(), '_redirects'), redirectsContent.trim());
@@ -134,21 +137,39 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
     console.log('Usando client/index.html como base...');
     clientIndexHTML = fs.readFileSync(clientIndexPath, 'utf8');
     
-    // Substituir script src por script inline que redireciona para a home
-    clientIndexHTML = clientIndexHTML.replace(
-      /<script.*?src=".*?"><\/script>/g,
-      `<script>
-        // Inicializar root
-        window.addEventListener('DOMContentLoaded', function() {
-          document.title = 'Escola Digital 3D';
-          // Forçar carregamento da página inicial
-          window.location.replace('/');
-        });
-      </script>`
-    );
+    // Criar somente o esqueleto, sem scripts de redirecionamento para evitar loops
+    const modifiedHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escola Digital 3D</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .content { text-align: center; margin-top: 2rem; }
+    h1 { color: #4f46e5; }
+    p { line-height: 1.6; color: #333; }
+    a { color: #4f46e5; text-decoration: none; font-weight: bold; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="container">
+      <div class="content">
+        <h1>Escola Digital 3D</h1>
+        <p>Bem-vindo à Plataforma Educacional</p>
+        <p>Esta é a página inicial do sistema.</p>
+        <a href="/">Iniciar Aplicação</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
     
-    fs.writeFileSync(indexFile, clientIndexHTML);
-    console.log('✅ Página alternativa criada baseada em client/index.html');
+    fs.writeFileSync(indexFile, modifiedHTML);
+    console.log('✅ Página alternativa simples criada');
   } else {
     // Criar uma página HTML simples caso não encontre client/index.html
     const fallbackHTML = `<!DOCTYPE html>
@@ -165,23 +186,15 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
     p { line-height: 1.6; color: #333; }
     a { color: #4f46e5; text-decoration: none; font-weight: bold; }
     a:hover { text-decoration: underline; }
-    .button { display: inline-block; background-color: #4f46e5; color: white; padding: 0.5rem 1rem; 
-              border-radius: 0.25rem; margin-top: 1rem; font-weight: bold; }
-    .button:hover { background-color: #4338ca; text-decoration: none; }
   </style>
-  <script>
-    // Redirecionar para a raiz após carregamento
-    window.addEventListener('DOMContentLoaded', function() {
-      window.location.replace('/');
-    });
-  </script>
 </head>
 <body>
   <div id="root">
     <div class="container">
       <div class="header">
         <h1>Escola Digital 3D</h1>
-        <p>Carregando...</p>
+        <p>Bem-vindo à plataforma educacional</p>
+        <a href="/">Iniciar Aplicação</a>
       </div>
     </div>
   </div>
@@ -189,7 +202,7 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
 </html>`;
 
     fs.writeFileSync(indexFile, fallbackHTML);
-    console.log(`✅ Página alternativa simples criada com redirecionamento automático`);
+    console.log(`✅ Página alternativa simples criada`);
   }
 } else {
   console.log(`✅ Build bem-sucedido! Arquivo criado: ${indexFile}`);
@@ -199,68 +212,39 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
   if (content.includes('Sistema de Gestão Escolar')) {
     console.log('⚠️ Conteúdo indesejado encontrado. Substituindo...');
     
-    // Verificar se possui o arquivo client/index.html para usar como base
-    const clientIndexPath = path.join(process.cwd(), 'client', 'index.html');
-    let newContent = '';
-    
-    if (fs.existsSync(clientIndexPath)) {
-      // Usar o client/index.html como base
-      newContent = fs.readFileSync(clientIndexPath, 'utf8');
-      
-      // Adicionar script de redirecionamento
-      newContent = newContent.replace(
-        '</head>',
-        `<script>
-          // Forçar carregamento da página inicial
-          window.addEventListener('DOMContentLoaded', function() {
-            window.location.replace('/');
-          });
-        </script>
-        </head>`
-      );
-    } else {
-      // Criar uma página de redirecionamento simples
-      newContent = `<!DOCTYPE html>
+    // Criar uma página simples sem scripts de redirecionamento para evitar loops
+    const cleanHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Escola Digital 3D</title>
-  <meta http-equiv="refresh" content="0;url=/" />
-  <script>window.location.replace('/');</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .content { text-align: center; margin-top: 2rem; }
+    h1 { color: #4f46e5; }
+    p { line-height: 1.6; color: #333; }
+    a { color: #4f46e5; text-decoration: none; font-weight: bold; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
   <div id="root">
-    <p>Carregando Escola Digital 3D...</p>
+    <div class="container">
+      <div class="content">
+        <h1>Escola Digital 3D</h1>
+        <p>Bem-vindo à Plataforma Educacional</p>
+        <p>Esta é a página inicial do sistema.</p>
+        <a href="/">Iniciar Aplicação</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>`;
-    }
     
-    fs.writeFileSync(indexFile, newContent);
-    console.log(`✅ Página substituída por versão melhorada com redirecionamento.`);
-  } else {
-    // Mesmo que o build tenha sido bem-sucedido e não tenha referência indesejada,
-    // vamos adicionar um script para garantir que o componente Home seja carregado
-    console.log('Adicionando script de segurança para garantir carregamento da Home...');
-    let content = fs.readFileSync(indexFile, 'utf8');
-    
-    // Adicionar script para garantir redirecionamento se necessário
-    if (!content.includes('window.location.replace')) {
-      content = content.replace(
-        '</head>',
-        `<script>
-          // Script de segurança para garantir carregamento da Home
-          if (window.location.pathname !== '/' && window.location.pathname !== '') {
-            window.location.replace('/');
-          }
-        </script>
-        </head>`
-      );
-      
-      fs.writeFileSync(indexFile, content);
-      console.log('✅ Script de segurança adicionado ao index.html');
-    }
+    fs.writeFileSync(indexFile, cleanHTML);
+    console.log(`✅ Página substituída por versão limpa sem redirecionamentos automáticos.`);
   }
 }
 

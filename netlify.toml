@@ -13,25 +13,18 @@
   npm_config_platform = "linux"
 
 # Configurações para o SPA routing
-# Importante: isso garante que o roteamento do lado do cliente funcione corretamente
+# Isso garante que o roteamento do lado do cliente funcione corretamente
 
-# Redirecionamento principal para rotas SPA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# Redirecionamento específico para garantir que o site abra na página Home
-[[redirects]]
-  from = "/index.html"
-  to = "/"
-  status = 200
-  force = true
-
-# Redirecionamento de segurança para evitar página incorreta
+# Redirecionamento de páginas com 'Sistema de Gestão Escolar'
 [[redirects]]
   from = "/Sistema*"
   to = "/"
   status = 301
+  force = true
+
+# Redirecionamento principal para rotas SPA (deve ser o último)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
   force = true 
