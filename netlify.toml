@@ -1,14 +1,26 @@
 [build]
-  command = "chmod +x ./netlify-prebuild.sh ./netlify-check.sh && ./netlify-prebuild.sh && ./netlify-check.sh && npm run build:client"
+  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
   publish = "dist"
 
 [build.environment]
   ROLLUP_SKIP_NATIVE = "true"
   NODE_OPTIONS = "--max_old_space_size=4096"
   VITE_APP_HOME_PATH = "/client/src/pages/Home.tsx"
+  VITE_DEPLOYMENT = "netlify"
 
-# Handle SPA routing
+# Configurações para o SPA routing
+# Importante: isso garante que o roteamento do lado do cliente funcione corretamente
+
+# Servir index.html para todas as rotas do cliente
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+  force = true
+
+# Garantir que a rota raiz também serve index.html
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+  force = true 
