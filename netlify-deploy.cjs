@@ -1,14 +1,10 @@
-// Script para garantir que o build do Netlify use o componente Home.tsx
+// Script para garantir que o build do Netlify use o componente Home.tsx (CommonJS version)
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const fs = require('fs');
+const path = require('path');
 
 console.log('Iniciando verificações para deploy no Netlify...');
 
-// Obter o diretório atual
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const cwd = process.cwd();
 
 // Verificar se o diretório client/src/pages existe

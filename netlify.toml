@@ -1,5 +1,5 @@
 [build]
-  command = "chmod +x ./netlify-prebuild.sh && ./netlify-prebuild.sh && node netlify-deploy.js && npm run build:client"
+  command = "chmod +x ./netlify-prebuild.sh ./netlify-check.sh && ./netlify-prebuild.sh && ./netlify-check.sh && npm run build:client"
   publish = "dist"
 
 [build.environment]
