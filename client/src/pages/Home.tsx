@@ -52,7 +52,7 @@ export default function Home() {
     console.log(`Login attempt with ${email}, ${password}, role: ${role}`);
     
     // Simple validation for sample users
-    const sampleUsers = {
+    const sampleUsers: Record<string, { password: string; role: string }> = {
       "professor@escola.com": { password: "123456", role: "professor" },
       "coordenador@escola.com": { password: "123456", role: "coordenador" },
       "diretor@escola.com": { password: "123456", role: "diretor" }
@@ -87,6 +87,13 @@ export default function Home() {
     }
   };
 
+  const [_, navigate] = useLocation();
+  
+  // Redirecionar para página de cadastro
+  const handleCriarConta = () => {
+    navigate("/cadastro");
+  };
+  
   return (
     <div className="min-h-screen w-full bg-gray-50 relative overflow-x-hidden">
       {/* Background Scene - conditional 3D rendering */}
@@ -120,17 +127,20 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 flex flex-col min-h-screen">
+      <div className="container mx-auto px-4 py-4 flex flex-col min-h-screen">
         <div className="w-full max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
           {/* Left Column with 3D Elements and Animations */}
           <div className="flex flex-col items-center md:items-start">
             <TypewriterTitle text="Sistema de Gestão Escolar" />
             
-            <RainbowText className="font-medium text-xl md:text-2xl mb-8">
+            <RainbowText className="font-medium text-xl md:text-2xl mb-3">
               Plataforma Educacional Integrada
             </RainbowText>
             
-            <div className="relative w-full h-64 md:h-96 mb-8">
+            {/* Rainbow Arc */}
+            <RainbowArc />
+            
+            <div className="relative w-full h-64 md:h-80 mb-6">
               {use3D ? (
                 <Canvas className="w-full h-full">
                   <Suspense fallback={null}>
@@ -140,15 +150,11 @@ export default function Home() {
                   </Suspense>
                 </Canvas>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-                  <div className="text-center">
-                    <div className="mx-auto w-32 h-32 bg-gradient-to-tr from-green-300 to-emerald-400 rounded-full flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                    <p className="mt-4 text-emerald-800 font-medium">Crescimento contínuo e monitorado</p>
-                  </div>
+                <div className="w-full h-full flex items-center justify-center rounded-lg">
+                  <Plant2D growthFactor={scrollPosition} />
+                  <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-emerald-800 font-medium">
+                    Crescimento contínuo e monitorado
+                  </p>
                 </div>
               )}
             </div>
@@ -197,34 +203,7 @@ export default function Home() {
                   </Suspense>
                 </Canvas>
               ) : (
-                <div className="w-full h-full bg-amber-100 rounded-full flex items-center justify-center border-4 border-amber-200">
-                  <div className="relative">
-                    {/* Bear face */}
-                    <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center">
-                      {/* Eyes */}
-                      {isBearWatchingPassword ? (
-                        <div className="flex items-center space-x-4">
-                          <div className="w-3 h-3 bg-black rounded-full relative">
-                            <div className="absolute w-6 h-2 bg-amber-500 top-0"></div>
-                          </div>
-                          <div className="w-3 h-3 bg-black rounded-full relative">
-                            <div className="absolute w-6 h-2 bg-amber-500 top-0"></div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-4">
-                          <div className="w-3 h-3 bg-black rounded-full"></div>
-                          <div className="w-3 h-3 bg-black rounded-full"></div>
-                        </div>
-                      )}
-                      {/* Nose */}
-                      <div className="absolute w-4 h-4 bg-amber-700 rounded-full bottom-3"></div>
-                    </div>
-                    {/* Ears */}
-                    <div className="absolute w-5 h-5 bg-amber-500 rounded-full -top-2 -left-2"></div>
-                    <div className="absolute w-5 h-5 bg-amber-500 rounded-full -top-2 -right-2"></div>
-                  </div>
-                </div>
+                <Bear2D isWatchingPassword={isBearWatchingPassword} />
               )}
             </div>
             
@@ -237,8 +216,18 @@ export default function Home() {
               onEmailFocus={() => setIsBearWatchingPassword(false)}
             />
             
+            <div className="mt-4 flex justify-center">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleCriarConta}
+              >
+                Criar Conta
+              </Button>
+            </div>
+            
             {/* Support Contact */}
-            <div className="mt-8 text-center text-sm text-gray-600">
+            <div className="mt-6 text-center text-sm text-gray-600">
               <p>Problemas para acessar? Entre em contato com o suporte:</p>
               <p className="font-medium text-primary">suporte@sistemaescolar.com.br</p>
             </div>
@@ -246,7 +235,7 @@ export default function Home() {
         </div>
         
         {/* Footer */}
-        <footer className="w-full mt-12 text-center text-sm text-gray-600">
+        <footer className="w-full mt-8 text-center text-sm text-gray-600">
           <p>&copy; {new Date().getFullYear()} Sistema de Gestão Escolar. Todos os direitos reservados.</p>
         </footer>
       </div>
