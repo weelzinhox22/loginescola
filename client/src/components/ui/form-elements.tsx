@@ -48,8 +48,8 @@ export function RoleOption({
     <label
       htmlFor={id}
       className={cn(
-        "flex flex-col items-center justify-center p-4 rounded-lg border-2 border-muted cursor-pointer transition-all hover:border-primary/50",
-        checked && "border-primary bg-primary/5"
+        "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-indigo-100 cursor-pointer transition-all hover:border-indigo-300 hover:shadow-md",
+        checked && "border-indigo-400 bg-indigo-50/50 shadow-md"
       )}
     >
       <input
@@ -62,14 +62,16 @@ export function RoleOption({
         onChange={onChange}
       />
       <div className={cn(
-        "w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors",
-        checked ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+        "w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 transform",
+        checked 
+          ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md scale-110" 
+          : "bg-gray-100 text-gray-400"
       )}>
         {icon}
       </div>
       <span className={cn(
-        "font-medium transition-colors",
-        checked ? "text-primary" : "text-muted-foreground"
+        "font-medium transition-colors text-sm",
+        checked ? "text-indigo-700" : "text-gray-500"
       )}>
         {label}
       </span>

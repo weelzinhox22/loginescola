@@ -5,14 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/login/LoginForm";
 import TypewriterTitle from "@/components/login/TypewriterTitle";
-import RainbowText from "@/components/login/RainbowText";
-import { RainbowArc } from "@/components/login/RainbowText";
+import GradientText, { GradientBackground, GradientCard, GradientDivider } from "@/components/login/RainbowText";
 import Background from "@/components/3d/Background";
 import Plant from "@/components/3d/Plant";
 import Bear from "@/components/3d/Bear";
 import Plant2D from "@/components/login/Plant2D";
 import Bear2D from "@/components/login/Bear2D";
 import { useToast } from "@/hooks/use-toast";
+import { CheckCircle2, BookOpen, BarChart, CalendarDays } from "lucide-react";
 
 export default function Home() {
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -95,52 +95,79 @@ export default function Home() {
   };
   
   return (
-    <div className="min-h-screen w-full bg-gray-50 relative overflow-x-hidden">
-      {/* Background Scene - conditional 3D rendering */}
-      <div className="fixed top-0 left-0 w-full h-full -z-10">
-        {use3D ? (
-          <Canvas>
-            <Suspense fallback={null}>
-              <Background />
-            </Suspense>
-          </Canvas>
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-50">
-            <div className="absolute inset-0 overflow-hidden opacity-20">
-              {/* Decorative background elements */}
-              {Array.from({ length: 30 }).map((_, i) => (
-                <div 
-                  key={i}
-                  className="absolute rounded-full bg-primary"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    width: `${Math.random() * 50 + 20}px`,
-                    height: `${Math.random() * 50 + 20}px`,
-                    opacity: Math.random() * 0.5 + 0.1,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="min-h-screen w-full bg-slate-50 relative overflow-x-hidden">
+      {/* Modern gradient background */}
+      <GradientBackground />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-4 flex flex-col min-h-screen">
-        <div className="w-full max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
-          {/* Left Column with 3D Elements and Animations */}
-          <div className="flex flex-col items-center md:items-start">
-            <TypewriterTitle text="Sistema de Gestão Escolar" />
+      <div className="container mx-auto px-4 py-8 flex flex-col min-h-screen">
+        <div className="w-full max-w-7xl mx-auto grid md:grid-cols-5 gap-10 items-center pb-8">
+          {/* Left Column - 3 columns wide */}
+          <div className="md:col-span-3 flex flex-col space-y-8 py-8">
+            <div className="space-y-2">
+              <TypewriterTitle 
+                text="Sistema de Gestão Escolar" 
+                className="md:max-w-2xl"
+              />
+              
+              <GradientText className="text-xl md:text-2xl font-medium md:max-w-2xl">
+                Plataforma Educacional Integrada
+              </GradientText>
+              
+              <GradientDivider />
+            </div>
             
-            <RainbowText className="font-medium text-xl md:text-2xl mb-3">
-              Plataforma Educacional Integrada
-            </RainbowText>
-            
-            {/* Rainbow Arc */}
-            <RainbowArc />
-            
-            <div className="relative w-full h-64 md:h-80 mb-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <GradientCard className="card-3d perspective-card">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-gradient-to-br from-indigo-600 to-indigo-500 p-3 rounded-lg text-white">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Gestão Acadêmica Completa</h3>
+                    <p className="text-gray-600 text-sm">Organize turmas, professores e alunos em uma plataforma integrada e intuitiva.</p>
+                  </div>
+                </div>
+              </GradientCard>
+
+              <GradientCard className="card-3d perspective-card">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-gradient-to-br from-indigo-600 to-indigo-500 p-3 rounded-lg text-white">
+                    <CalendarDays className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Controle de Frequência</h3>
+                    <p className="text-gray-600 text-sm">Monitore a presença dos alunos com registros em tempo real e notificações automáticas.</p>
+                  </div>
+                </div>
+              </GradientCard>
+
+              <GradientCard className="card-3d perspective-card">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-gradient-to-br from-indigo-600 to-indigo-500 p-3 rounded-lg text-white">
+                    <BarChart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Relatórios Avançados</h3>
+                    <p className="text-gray-600 text-sm">Visualize dados de desempenho com gráficos interativos e relatórios personalizados.</p>
+                  </div>
+                </div>
+              </GradientCard>
+
+              <GradientCard className="card-3d perspective-card">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-gradient-to-br from-indigo-600 to-indigo-500 p-3 rounded-lg text-white">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Comunicação Integrada</h3>
+                    <p className="text-gray-600 text-sm">Conecte educadores, alunos e responsáveis com ferramentas de comunicação seguras.</p>
+                  </div>
+                </div>
+              </GradientCard>
+            </div>
+
+            <div className="relative w-full h-64 md:h-72 overflow-hidden rounded-2xl shadow-lg">
               {use3D ? (
                 <Canvas className="w-full h-full">
                   <Suspense fallback={null}>
@@ -150,50 +177,20 @@ export default function Home() {
                   </Suspense>
                 </Canvas>
               ) : (
-                <div className="w-full h-full flex items-center justify-center rounded-lg">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
                   <Plant2D growthFactor={scrollPosition} />
-                  <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-emerald-800 font-medium">
+                  <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-indigo-700 font-medium bg-white/70 px-4 py-2 rounded-full">
                     Crescimento contínuo e monitorado
                   </p>
                 </div>
               )}
             </div>
-            
-            <Card className="bg-white/80 backdrop-blur-sm p-6 w-full">
-              <h2 className="font-semibold text-xl text-dark mb-4">Benefícios do Sistema</h2>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Gestão completa de alunos, turmas e professores</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Controle de notas e frequência em tempo real</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Comunicação facilitada entre escola e família</span>
-                </li>
-                <li className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Relatórios personalizados para cada nível de acesso</span>
-                </li>
-              </ul>
-            </Card>
           </div>
           
-          {/* Right Column with Login Form */}
-          <div className="bg-white rounded-xl shadow-xl p-8 md:p-10">
+          {/* Right Column with Login Form - 2 columns wide */}
+          <div className="md:col-span-2 bg-white rounded-2xl shadow-xl p-8 md:p-10 glass-effect">
             {/* Bear Animation Container */}
-            <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] mx-auto mb-6">
+            <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] mx-auto mb-8 float-animation">
               {use3D ? (
                 <Canvas>
                   <Suspense fallback={null}>
@@ -207,7 +204,7 @@ export default function Home() {
               )}
             </div>
             
-            <h2 className="font-bold text-2xl text-center text-dark mb-6">Acesso ao Sistema</h2>
+            <h2 className="font-bold text-2xl text-center text-indigo-800 mb-6">Acesso ao Sistema</h2>
             
             <LoginForm 
               onLogin={handleLogin}
@@ -216,26 +213,26 @@ export default function Home() {
               onEmailFocus={() => setIsBearWatchingPassword(false)}
             />
             
-            <div className="mt-4 flex justify-center">
+            <div className="mt-5 flex justify-center">
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 transition-all font-medium" 
                 onClick={handleCriarConta}
               >
-                Criar Conta
+                Criar Nova Conta
               </Button>
             </div>
             
             {/* Support Contact */}
-            <div className="mt-6 text-center text-sm text-gray-600">
-              <p>Problemas para acessar? Entre em contato com o suporte:</p>
-              <p className="font-medium text-primary">suporte@sistemaescolar.com.br</p>
+            <div className="mt-8 p-4 bg-indigo-50 rounded-xl text-center text-sm border border-indigo-100">
+              <p className="text-gray-700 mb-1">Problemas para acessar?</p>
+              <p className="font-medium text-indigo-700">suporte@sistemaescolar.com.br</p>
             </div>
           </div>
         </div>
         
         {/* Footer */}
-        <footer className="w-full mt-8 text-center text-sm text-gray-600">
+        <footer className="w-full mt-8 py-6 text-center text-sm text-gray-500 border-t border-gray-200">
           <p>&copy; {new Date().getFullYear()} Sistema de Gestão Escolar. Todos os direitos reservados.</p>
         </footer>
       </div>

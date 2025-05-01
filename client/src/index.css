@@ -72,75 +72,81 @@
 }
 
 /* Custom utility classes */
-.rainbow-text {
-  background: linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF);
-  background-size: 400% 400%;
-  animation: rainbow 5s ease infinite;
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5, #3b82f6, #2563eb);
+  --secondary-gradient: linear-gradient(135deg, #0ea5e9, #0284c7, #0369a1);
+  --accent-color: #c084fc;
+  --accent-gradient: linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef);
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --background-color: #f9fafb;
+  --card-bg: #ffffff;
+  --text-color: #1e293b;
+  --text-muted: #64748b;
+  --border-radius: 0.5rem;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.gradient-text {
+  background: var(--accent-gradient);
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
-.rainbow-gradient {
-  background: linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF);
-  background-size: 400% 400%;
-  animation: rainbow 8s ease infinite;
+.primary-gradient {
+  background: var(--primary-gradient);
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
 }
 
-@keyframes rainbow {
+.secondary-gradient {
+  background: var(--secondary-gradient);
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
   0% { background-position: 0% 50% }
   50% { background-position: 100% 50% }
   100% { background-position: 0% 50% }
 }
 
-@keyframes grow {
-  0% { transform: scale(0.5); opacity: 0.7; }
-  50% { transform: scale(1.05); opacity: 0.9; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
 
-@keyframes sway {
+@keyframes gentle-rotate {
   0% { transform: rotate(-2deg); }
   50% { transform: rotate(2deg); }
   100% { transform: rotate(-2deg); }
 }
 
-.plant-container {
-  perspective: 1000px;
+@keyframes pulse-subtle {
+  0% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.8; transform: scale(1); }
 }
 
-.plant-animation {
-  transform-origin: bottom center;
-  animation: sway 4s ease-in-out infinite;
+.float-animation {
+  animation: float 6s ease-in-out infinite;
 }
 
-.plant-pot {
-  position: relative;
-  width: 120px;
-  height: 100px;
-  margin: 0 auto;
-  overflow: visible;
+.rotate-animation {
+  animation: gentle-rotate 8s ease-in-out infinite;
 }
 
-.plant-stem {
-  position: absolute;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 80px;
-  background-color: #228B22;
-  z-index: 10;
-  transform-origin: bottom center;
-}
-
-.plant-leaf {
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  background-color: #32CD32;
-  border-radius: 50%;
-  animation: grow 2s ease-out forwards;
-  z-index: 15;
+.pulse-animation {
+  animation: pulse-subtle 4s ease-in-out infinite;
 }
 
 .bear-container {
@@ -155,4 +161,69 @@
     width: 80px;
     height: 80px;
   }
+}
+
+/* Glass effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Style for illustrations */
+.illustration-container {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  height: 300px;
+  overflow: visible;
+}
+
+/* Blob animations */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite ease-in-out;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Modern 3D Card */
+.perspective-card {
+  perspective: 1500px;
+}
+
+.card-3d {
+  transition: all 0.5s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: rotateY(5deg) rotateX(5deg) translateZ(10px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }

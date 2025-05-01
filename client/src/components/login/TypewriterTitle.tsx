@@ -3,11 +3,13 @@ import { useEffect, useState, useRef } from "react";
 interface TypewriterTitleProps {
   text: string;
   speed?: number;
+  className?: string;
 }
 
 export default function TypewriterTitle({ 
   text,
-  speed = 100
+  speed = 70,
+  className = ""
 }: TypewriterTitleProps) {
   const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,9 +46,13 @@ export default function TypewriterTitle({
   }, [currentIndex, isTyping, text, speed]);
 
   return (
-    <h1 className="text-3xl md:text-4xl font-bold text-primary mt-2 mb-1 flex">
-      <span>{displayText}</span>
-      <span className={`w-1.5 h-8 ml-1 bg-primary inline-block ${isTyping ? 'animate-pulse' : 'opacity-0'}`}></span>
+    <h1 className={`text-3xl md:text-5xl font-bold mb-2 flex items-center ${className}`}>
+      <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400">
+        {displayText}
+      </span>
+      <span 
+        className={`w-1.5 h-10 ml-1 bg-indigo-500 inline-block rounded-sm ${isTyping ? 'animate-pulse' : 'opacity-0'}`}
+      ></span>
     </h1>
   );
 }

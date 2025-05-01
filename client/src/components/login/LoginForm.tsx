@@ -67,16 +67,16 @@ export default function LoginForm({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="text-indigo-700 font-medium">Email</FormLabel>
               <FormControl>
                 <Input
                   placeholder="seu.email@escola.com.br"
                   {...field}
                   onFocus={handleEmailFocus}
-                  className="bg-white/50 focus:bg-white transition-colors"
+                  className="bg-white/80 border-indigo-100 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all rounded-lg py-5"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />
@@ -86,7 +86,7 @@ export default function LoginForm({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Senha</FormLabel>
+              <FormLabel className="text-indigo-700 font-medium">Senha</FormLabel>
               <FormControl>
                 <Input
                   type="password"
@@ -94,16 +94,16 @@ export default function LoginForm({
                   {...field}
                   onFocus={handlePasswordFocus}
                   onBlur={handlePasswordBlur}
-                  className="bg-white/50 focus:bg-white transition-colors"
+                  className="bg-white/80 border-indigo-100 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all rounded-lg py-5"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />
 
         <div className="space-y-4">
-          <FormLabel className="block mb-2">Selecione seu perfil de acesso</FormLabel>
+          <FormLabel className="block mb-2 text-indigo-700 font-medium">Selecione seu perfil de acesso</FormLabel>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
@@ -174,17 +174,30 @@ export default function LoginForm({
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  className="border-indigo-300 text-indigo-600 focus:ring-indigo-500"
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Lembrar-me neste dispositivo</FormLabel>
+                <FormLabel className="text-gray-600 font-normal">Lembrar-me neste dispositivo</FormLabel>
               </div>
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
+        <Button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-medium py-5 rounded-lg transition-all shadow-md hover:shadow-lg" 
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Entrando...
+            </span>
+          ) : "Entrar"}
         </Button>
       </form>
     </Form>
