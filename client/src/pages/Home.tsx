@@ -169,13 +169,12 @@ export default function Home() {
 
             <div className="relative w-full h-64 md:h-72 overflow-hidden rounded-2xl shadow-lg">
               {use3D ? (
-                <Canvas className="w-full h-full">
-                  <Suspense fallback={null}>
-                    <Plant growthFactor={scrollPosition} />
-                    <ambientLight intensity={0.5} />
-                    <directionalLight position={[10, 10, 5]} intensity={1} />
-                  </Suspense>
-                </Canvas>
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
+                <Plant2D growthFactor={scrollPosition} />
+                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-indigo-700 font-medium bg-white/70 px-4 py-2 rounded-full">
+                  Crescimento contínuo e monitorado
+                </p>
+              </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
                   <Plant2D growthFactor={scrollPosition} />
@@ -191,17 +190,7 @@ export default function Home() {
           <div className="md:col-span-2 bg-white rounded-2xl shadow-xl p-8 md:p-10 glass-effect">
             {/* Bear Animation Container */}
             <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] mx-auto mb-8 float-animation">
-              {use3D ? (
-                <Canvas>
-                  <Suspense fallback={null}>
-                    <Bear isWatchingPassword={isBearWatchingPassword} />
-                    <ambientLight intensity={0.5} />
-                    <directionalLight position={[10, 10, 5]} intensity={1} />
-                  </Suspense>
-                </Canvas>
-              ) : (
-                <Bear2D isWatchingPassword={isBearWatchingPassword} />
-              )}
+              <Bear2D isWatchingPassword={isBearWatchingPassword} />
             </div>
             
             <h2 className="font-bold text-2xl text-center text-indigo-800 mb-6">Acesso ao Sistema</h2>
