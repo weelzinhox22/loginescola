@@ -10,7 +10,7 @@ ls -la
 
 # Set environment variable to skip native Rollup dependencies
 export ROLLUP_SKIP_NATIVE=true
-NODE_OPTIONS="--max_old_space_size=4096"
+export NODE_OPTIONS="--max_old_space_size=4096"
 echo "Set ROLLUP_SKIP_NATIVE=true and NODE_OPTIONS=--max_old_space_size=4096"
 
 # Check if client directory exists
@@ -44,19 +44,15 @@ if [ -f netlify-schema.ts ]; then
   cp netlify-schema.ts shared/schema.ts
 fi
 
-# Check routing in App.tsx to make sure Home is the default route
-CONTAINS_HOME_ROUTE=$(grep -c "Home" client/src/App.tsx || echo "0")
-if [ "$CONTAINS_HOME_ROUTE" -eq "0" ]; then
-  echo "WARNING: App.tsx doesn't seem to include a route to Home component!"
-  echo "Contents of App.tsx:"
-  cat client/src/App.tsx
-fi
-
-# Check if the app can use vite directly
-if [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
-  echo "Using existing Vite config"
+# Check if we have a simple-vite.config.js file
+if [ -f "simple-vite.config.js" ]; then
+  echo "Using simple-vite.config.js..."
+  # Copy it to a standard vite.config.js
+  cp simple-vite.config.js vite.config.js
+  echo "Copied simple-vite.config.js to vite.config.js"
 else
-  echo "No Vite config found, creating a simple one..."
+  echo "No simple-vite.config.js found, creating a new one..."
+  # Create a vite config with path aliases
   cat > vite.config.js << 'EOL'
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -64,30 +60,25 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  root: "client",
+  resolve: {
+    alias: {
+      "@": path.resolve(process.cwd(), "client", "src"),
+      "@shared": path.resolve(process.cwd(), "shared"),
+    },
+  },
+  root: path.resolve(process.cwd(), "client"),
   build: {
-    outDir: "../dist",
+    outDir: path.resolve(process.cwd(), "dist"),
     emptyOutDir: true,
   },
 });
 EOL
-  echo "Created simple vite.config.js"
+  echo "Created new vite.config.js with path aliases"
 fi
 
-# Update package.json build script directly if needed
-if grep -q "server/index.ts" package.json; then
-  echo "Modifying package.json build script to skip server bundling..."
-  sed -i 's/"build": "vite build && esbuild server\/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"/"build": "ROLLUP_SKIP_NATIVE=true vite build"/g' package.json
-  cat package.json
-fi
-
-# Try to install any missing dependencies
-echo "Installing Vite and necessary packages..."
-npm install --no-save vite @vitejs/plugin-react > /dev/null 2>&1
-
-# Run the build command directly with ROLLUP_SKIP_NATIVE
+# Run the build command with the correct config
 echo "Building client-side app with ROLLUP_SKIP_NATIVE=true..."
-ROLLUP_SKIP_NATIVE=true NODE_OPTIONS="--max_old_space_size=4096" npx vite build
+ROLLUP_SKIP_NATIVE=true NODE_OPTIONS="--max_old_space_size=4096" npx vite build --config vite.config.js
 
 # Check if the build succeeded
 if [ -d "dist" ]; then
@@ -107,7 +98,7 @@ else
   echo "Trying alternative build approach..."
   
   # Second attempt with explicit paths
-  ROLLUP_SKIP_NATIVE=true NODE_OPTIONS="--max_old_space_size=4096" npx vite build --root client --outDir ../dist
+  ROLLUP_SKIP_NATIVE=true NODE_OPTIONS="--max_old_space_size=4096" npx vite build --config vite.config.js
   
   if [ -d "dist" ]; then
     echo "✅ Alternative build succeeded! dist directory exists."
@@ -122,7 +113,9 @@ else
     # Copy client/index.html to dist
     if [ -f "client/index.html" ]; then
       cp client/index.html dist/index.html
-      echo "Copied client/index.html to dist/index.html"
+      # Update the script path in index.html
+      sed -i 's#/src/main.tsx#./assets/index.js#g' dist/index.html
+      echo "Copied and updated client/index.html to dist/index.html"
     else
       # Create a minimal index.html that loads the app
       cat > dist/index.html << 'EOL'
