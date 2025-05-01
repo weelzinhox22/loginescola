@@ -61,4 +61,40 @@ echo "npm version: $(npm -v)"
 export ROLLUP_SKIP_NATIVE=true
 echo "Set ROLLUP_SKIP_NATIVE=true"
 
+# Verificar se o diretório client/src/pages existe
+if [ ! -d "client/src/pages" ]; then
+  echo "ERROR: Diretório client/src/pages não encontrado!"
+  exit 1
+fi
+
+# Verificar se Home.tsx existe
+if [ ! -f "client/src/pages/Home.tsx" ]; then
+  echo "ERROR: client/src/pages/Home.tsx não encontrado!"
+  exit 1
+fi
+
+# Verificar se App.tsx contém a rota para Home
+if [ ! -f "client/src/App.tsx" ]; then
+  echo "ERROR: client/src/App.tsx não encontrado!"
+  exit 1
+fi
+
+# Verificar se a página Home está exportada corretamente
+grep -q "export default Home" "client/src/pages/Home.tsx"
+if [ $? -ne 0 ]; then
+  echo "WARNING: 'export default Home' não encontrado em Home.tsx"
+  # Não vamos falhar por isso, apenas avisar
+fi
+
+# Verificar se a rota para Home está definida corretamente
+grep -q "path=\"/\" component={Home}" "client/src/App.tsx"
+if [ $? -ne 0 ]; then
+  echo "WARNING: Rota para Home não encontrada em App.tsx"
+  # Não vamos falhar por isso, apenas avisar
+fi
+
+# Copiar o netlify-vite.config.ts para vite.config.js para garantir o build correto
+cp netlify-vite.config.ts vite.config.js
+echo "✅ Configuração preparada para build"
+
 echo "Pre-build script completed successfully!" 

@@ -1,10 +1,11 @@
 [build]
-  command = "chmod +x ./netlify-fix.sh && ./netlify-fix.sh"
+  command = "chmod +x ./netlify-prebuild.sh && ./netlify-prebuild.sh && node netlify-deploy.js && npm run build:client"
   publish = "dist"
 
 [build.environment]
   ROLLUP_SKIP_NATIVE = "true"
   NODE_OPTIONS = "--max_old_space_size=4096"
+  VITE_APP_HOME_PATH = "/client/src/pages/Home.tsx"
 
 # Handle SPA routing
 [[redirects]]
