@@ -11,6 +11,7 @@ import Plant from "@/components/3d/Plant";
 import Bear from "@/components/3d/Bear";
 import Plant2D from "@/components/login/Plant2D";
 import Bear2D from "@/components/login/Bear2D";
+import Book2D from "@/components/login/Book2D";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, BookOpen, BarChart, CalendarDays } from "lucide-react";
 
@@ -168,21 +169,12 @@ export default function Home() {
             </div>
 
             <div className="relative w-full h-64 md:h-72 overflow-hidden rounded-2xl shadow-lg">
-              {use3D ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
-                <Plant2D growthFactor={scrollPosition} />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
+                <Book2D animationSpeed={3} />
                 <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-indigo-700 font-medium bg-white/70 px-4 py-2 rounded-full">
-                  Crescimento contínuo e monitorado
+                  Aprendizado digital interativo
                 </p>
               </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl">
-                  <Plant2D growthFactor={scrollPosition} />
-                  <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-indigo-700 font-medium bg-white/70 px-4 py-2 rounded-full">
-                    Crescimento contínuo e monitorado
-                  </p>
-                </div>
-              )}
             </div>
           </div>
           
