@@ -1,6 +1,12 @@
 [build]
-  command = "npm run build:client"
+  command = "chmod +x ./netlify-prebuild.sh && ./netlify-prebuild.sh && npm run build"
   publish = "dist"
+
+[build.environment]
+  ROLLUP_SKIP_NATIVE = "true"
+  NODE_OPTIONS = "--max_old_space_size=4096"
+  CLEAN_MODULES = "false"
+  USE_NETLIFY_PACKAGE = "true"
 
 # Handle SPA routing
 [[redirects]]

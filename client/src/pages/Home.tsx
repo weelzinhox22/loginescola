@@ -66,7 +66,11 @@ export default function Home() {
         
         // Simulate redirect
         setTimeout(() => {
-          navigate(`/dashboard/${result.user.role}`);
+          if (result.user) {
+            navigate(`/dashboard/${result.user.role}`);
+          } else {
+            navigate('/');
+          }
         }, 1500);
       } else {
         // Error toast
