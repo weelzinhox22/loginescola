@@ -24,7 +24,7 @@ export default function Home() {
   // Handle 3D rendering errors
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      if (event.message.includes('replit') || event.message.includes('Cannot read')) {
+      if (event.message.includes('Cannot read')) {
         console.warn('Disabling 3D components due to errors');
         setUse3D(false);
       }
@@ -162,7 +162,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-800 mb-2">Comunicação Integrada</h3>
-                    <p className="text-gray-600 text-sm">Conecte educadores, alunos e responsáveis com ferramentas de comunicação seguras.</p>
+                    <p className="text-gray-600 text-sm">Conecte educadores, com ferramentas de comunicação seguras.</p>
                   </div>
                 </div>
               </GradientCard>
