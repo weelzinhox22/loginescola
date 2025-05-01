@@ -18,6 +18,13 @@ if [ -n "$NETLIFY" ]; then
     cp netlify-vite.config.ts vite.config.ts
   fi
   
+  # Replace schema.ts with client-only version
+  if [ -f netlify-schema.ts ]; then
+    echo "Using Netlify-specific schema.ts..."
+    mkdir -p shared
+    cp netlify-schema.ts shared/schema.ts
+  fi
+  
   # Check if the Netlify-specific package.json exists and use it
   if [ -f netlify-package.json ] && [ "$USE_NETLIFY_PACKAGE" = "true" ]; then
     echo "Using Netlify-specific package.json..."

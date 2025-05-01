@@ -15,17 +15,29 @@ Este projeto foi configurado para ser facilmente implantado no Netlify.
 3. Selecione o repositório clonado ou forkado
 
 4. Configure as seguintes opções de build:
-   - **Build command**: `npm run build:client`
+   - **Build command**: `chmod +x ./netlify-fix.sh && ./netlify-fix.sh`
    - **Publish directory**: `dist`
 
-5. Clique em "Deploy site"
+5. Adicione as seguintes variáveis de ambiente:
+   - **ROLLUP_SKIP_NATIVE**: `true`
+   - **NODE_OPTIONS**: `--max_old_space_size=4096`
 
-### Configuração Avançada
+6. Clique em "Deploy site"
 
-O projeto inclui:
-- `netlify.toml` - Arquivo de configuração para Netlify
-- Redirecionamentos para SPA (Single Page Application)
-- Scripts otimizados para build apenas do frontend
+### Solução de Problemas com o Netlify
+
+Se você encontrar erros durante o deploy, aqui estão algumas soluções:
+
+1. **Erro de módulo não encontrado (`@rollup/rollup-linux-x64-gnu`):**
+   - Este é um problema conhecido com dependências nativas do Rollup no ambiente do Netlify
+   - Nosso script `netlify-fix.sh` resolve isso automaticamente configurando a variável de ambiente `ROLLUP_SKIP_NATIVE=true`
+
+2. **Erro com a importação do Drizzle ORM:**
+   - O script `netlify-fix.sh` substitui o arquivo `schema.ts` por uma versão apenas para o cliente que não depende do Drizzle ORM
+
+3. **Outros erros de build:**
+   - Tente usar o arquivo `simple-package.json` em vez do `package.json` original
+   - Defina a variável de ambiente `DEBUG=true` no Netlify para obter mais informações sobre o processo de build
 
 ## Desenvolvimento Local
 

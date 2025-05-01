@@ -1,5 +1,6 @@
+# Backup Netlify configuration
 [build]
-  command = "chmod +x ./netlify-fix.sh && ./netlify-fix.sh"
+  command = "ROLLUP_SKIP_NATIVE=true npm run build"
   publish = "dist"
 
 [build.environment]
