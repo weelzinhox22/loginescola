@@ -23,6 +23,7 @@ interface LoginFormProps {
   onPasswordFocus: () => void;
   onPasswordBlur: () => void;
   onEmailFocus: () => void;
+  isLoading?: boolean;
 }
 
 export default function LoginForm({
@@ -30,6 +31,7 @@ export default function LoginForm({
   onPasswordFocus,
   onPasswordBlur,
   onEmailFocus,
+  isLoading = false,
 }: LoginFormProps) {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -182,9 +184,9 @@ export default function LoginForm({
         <Button 
           type="submit" 
           className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-medium py-5 rounded-lg transition-all shadow-md hover:shadow-lg" 
-          disabled={form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting || isLoading}
         >
-          {form.formState.isSubmitting ? (
+          {form.formState.isSubmitting || isLoading ? (
             <span className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

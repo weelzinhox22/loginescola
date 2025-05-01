@@ -14,12 +14,15 @@ import Bear2D from "@/components/login/Bear2D";
 import Book2D from "@/components/login/Book2D";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, BookOpen, BarChart, CalendarDays } from "lucide-react";
+import { mockAuth } from "@/api/mock";
 
 export default function Home() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isBearWatchingPassword, setIsBearWatchingPassword] = useState(false);
   const [use3D, setUse3D] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [_, navigate] = useLocation();
   
   // Handle 3D rendering errors
   useEffect(() => {
@@ -47,48 +50,42 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Simple login handler
-  const handleLogin = (email: string, password: string, role: string) => {
-    // Simulate API call
-    console.log(`Login attempt with ${email}, ${password}, role: ${role}`);
+  // Login handler using mock API
+  const handleLogin = async (email: string, password: string, role: string) => {
+    setIsLoading(true);
     
-    // Simple validation for sample users
-    const sampleUsers: Record<string, { password: string; role: string }> = {
-      "professor@escola.com": { password: "123456", role: "professor" },
-      "coordenador@escola.com": { password: "123456", role: "coordenador" },
-      "diretor@escola.com": { password: "123456", role: "diretor" }
-    };
-    
-    if (sampleUsers[email] && sampleUsers[email].password === password) {
-      // Success toast
-      toast({
-        title: "Login bem-sucedido!",
-        description: `Redirecionando para o dashboard de ${role}...`,
-      });
+    try {
+      const result = await mockAuth.login(email, password);
       
-      // Simulate redirect
-      setTimeout(() => {
-        alert(`Redirecionando para o dashboard de ${role}...`);
-        /* 
-         * INTEGRAÇÃO COM BACKEND
-         * 
-         * Aqui seria feito o redirecionamento com base no perfil do usuário:
-         * - Professores: /dashboard/professor
-         * - Coordenadores: /dashboard/coordenador
-         * - Diretores: /dashboard/diretor
-         */
-      }, 2000);
-    } else {
-      // Error toast
+      if (result.success && result.user) {
+        // Success toast
+        toast({
+          title: "Login bem-sucedido!",
+          description: `Redirecionando para o dashboard de ${result.user.role}...`,
+        });
+        
+        // Simulate redirect
+        setTimeout(() => {
+          navigate(`/dashboard/${result.user.role}`);
+        }, 1500);
+      } else {
+        // Error toast
+        toast({
+          title: "Erro de login",
+          description: result.error || "Ocorreu um erro ao fazer login",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Erro de login",
-        description: "Email ou senha incorretos. Tente novamente.",
+        title: "Erro de conexão",
+        description: "Não foi possível conectar ao servidor",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const [_, navigate] = useLocation();
   
   // Redirecionar para página de cadastro
   const handleCriarConta = () => {
@@ -162,7 +159,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-800 mb-2">Comunicação Integrada</h3>
-                    <p className="text-gray-600 text-sm">Conecte educadores, com ferramentas de comunicação seguras.</p>
+                    <p className="text-gray-600 text-sm">Conecte educadores com ferramentas de comunicação seguras.</p>
                   </div>
                 </div>
               </GradientCard>
@@ -192,6 +189,7 @@ export default function Home() {
               onPasswordFocus={() => setIsBearWatchingPassword(true)}
               onPasswordBlur={() => setIsBearWatchingPassword(false)}
               onEmailFocus={() => setIsBearWatchingPassword(false)}
+              isLoading={isLoading}
             />
             
             <div className="mt-5 flex justify-center">

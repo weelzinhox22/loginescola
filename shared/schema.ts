@@ -21,10 +21,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 // Login schema for validation
 export const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  email: z.string().email({ message: "Email inválido" }),
+  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
   role: z.enum(["professor", "coordenador", "diretor"], {
-    errorMap: () => ({ message: "Selecione um perfil válido" }),
+    required_error: "Selecione um perfil de acesso",
   }),
   remember: z.boolean().optional(),
 });
