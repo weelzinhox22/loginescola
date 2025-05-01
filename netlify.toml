@@ -15,16 +15,23 @@
 # Configurações para o SPA routing
 # Importante: isso garante que o roteamento do lado do cliente funcione corretamente
 
-# Servir index.html para todas as rotas do cliente
+# Redirecionamento principal para rotas SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = true
 
-# Garantir que a rota raiz também serve index.html
+# Redirecionamento específico para garantir que o site abra na página Home
 [[redirects]]
-  from = "/"
-  to = "/index.html"
+  from = "/index.html"
+  to = "/"
   status = 200
+  force = true
+
+# Redirecionamento de segurança para evitar página incorreta
+[[redirects]]
+  from = "/Sistema*"
+  to = "/"
+  status = 301
   force = true 

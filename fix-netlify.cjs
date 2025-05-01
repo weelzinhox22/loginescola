@@ -40,6 +40,14 @@ if (!fs.existsSync(appFile)) {
   console.error(`⚠️ Arquivo não encontrado: ${appFile}`);
 } else {
   console.log(`✅ Arquivo encontrado: ${appFile}`);
+  
+  // Verificar se a rota para Home está configurada corretamente
+  const appContent = fs.readFileSync(appFile, 'utf8');
+  if (!appContent.includes('path="/" component={Home}')) {
+    console.warn('⚠️ Rota para Home não encontrada no App.tsx!');
+  } else {
+    console.log('✅ Rota para Home configurada corretamente no App.tsx');
+  }
 }
 
 // Corrigir o problema com o Rollup
@@ -76,6 +84,19 @@ exports.relocateDll = () => null;
   console.error(`❌ Erro ao corrigir Rollup: ${error.message}`);
 }
 
+// Criar _redirects específico do Netlify
+try {
+  console.log('Criando arquivo _redirects específico do Netlify...');
+  const redirectsContent = `
+# Arquivo de redirecionamento específico do Netlify
+/* /index.html 200
+`;
+  fs.writeFileSync(path.join(process.cwd(), '_redirects'), redirectsContent.trim());
+  console.log('✅ Arquivo _redirects criado com sucesso');
+} catch (error) {
+  console.error(`❌ Erro ao criar arquivo _redirects: ${error.message}`);
+}
+
 // Tentar executar o build
 process.env.ROLLUP_SKIP_NATIVE = 'true';
 process.env.NODE_OPTIONS = '--max_old_space_size=4096';
@@ -87,6 +108,16 @@ const buildResult = runCommand('npx vite build --config vite.config.netlify.js')
 const distDir = path.join(process.cwd(), 'dist');
 const indexFile = path.join(distDir, 'index.html');
 
+// Copiar arquivo _redirects para a pasta dist
+try {
+  if (fs.existsSync('_redirects')) {
+    fs.copyFileSync('_redirects', path.join(distDir, '_redirects'));
+    console.log('✅ Arquivo _redirects copiado para a pasta dist');
+  }
+} catch (error) {
+  console.error(`❌ Erro ao copiar arquivo _redirects: ${error.message}`);
+}
+
 if (!fs.existsSync(indexFile) || !buildResult.success) {
   console.log('❌ Build falhou. Criando página alternativa...');
   
@@ -95,8 +126,32 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
     fs.mkdirSync(distDir, { recursive: true });
   }
   
-  // Criar uma página HTML simples
-  const fallbackHTML = `<!DOCTYPE html>
+  // Criar uma versão simplificada do client/index.html
+  let clientIndexHTML = '';
+  const clientIndexPath = path.join(process.cwd(), 'client', 'index.html');
+  
+  if (fs.existsSync(clientIndexPath)) {
+    console.log('Usando client/index.html como base...');
+    clientIndexHTML = fs.readFileSync(clientIndexPath, 'utf8');
+    
+    // Substituir script src por script inline que redireciona para a home
+    clientIndexHTML = clientIndexHTML.replace(
+      /<script.*?src=".*?"><\/script>/g,
+      `<script>
+        // Inicializar root
+        window.addEventListener('DOMContentLoaded', function() {
+          document.title = 'Escola Digital 3D';
+          // Forçar carregamento da página inicial
+          window.location.replace('/');
+        });
+      </script>`
+    );
+    
+    fs.writeFileSync(indexFile, clientIndexHTML);
+    console.log('✅ Página alternativa criada baseada em client/index.html');
+  } else {
+    // Criar uma página HTML simples caso não encontre client/index.html
+    const fallbackHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -114,26 +169,28 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
               border-radius: 0.25rem; margin-top: 1rem; font-weight: bold; }
     .button:hover { background-color: #4338ca; text-decoration: none; }
   </style>
+  <script>
+    // Redirecionar para a raiz após carregamento
+    window.addEventListener('DOMContentLoaded', function() {
+      window.location.replace('/');
+    });
+  </script>
 </head>
 <body>
   <div id="root">
     <div class="container">
       <div class="header">
         <h1>Escola Digital 3D</h1>
-        <p>Ambiente educacional interativo</p>
-      </div>
-      <div>
-        <p>Bem-vindo à plataforma de gestão escolar digital.</p>
-        <p>Acesse o sistema completo através do botão abaixo.</p>
-        <a href="/" class="button">Acessar Plataforma</a>
+        <p>Carregando...</p>
       </div>
     </div>
   </div>
 </body>
 </html>`;
 
-  fs.writeFileSync(indexFile, fallbackHTML, 'utf8');
-  console.log(`✅ Página alternativa criada: ${indexFile}`);
+    fs.writeFileSync(indexFile, fallbackHTML);
+    console.log(`✅ Página alternativa simples criada com redirecionamento automático`);
+  }
 } else {
   console.log(`✅ Build bem-sucedido! Arquivo criado: ${indexFile}`);
   
@@ -142,23 +199,68 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
   if (content.includes('Sistema de Gestão Escolar')) {
     console.log('⚠️ Conteúdo indesejado encontrado. Substituindo...');
     
-    // Criar página de redirecionamento
-    const redirectHTML = `<!DOCTYPE html>
+    // Verificar se possui o arquivo client/index.html para usar como base
+    const clientIndexPath = path.join(process.cwd(), 'client', 'index.html');
+    let newContent = '';
+    
+    if (fs.existsSync(clientIndexPath)) {
+      // Usar o client/index.html como base
+      newContent = fs.readFileSync(clientIndexPath, 'utf8');
+      
+      // Adicionar script de redirecionamento
+      newContent = newContent.replace(
+        '</head>',
+        `<script>
+          // Forçar carregamento da página inicial
+          window.addEventListener('DOMContentLoaded', function() {
+            window.location.replace('/');
+          });
+        </script>
+        </head>`
+      );
+    } else {
+      // Criar uma página de redirecionamento simples
+      newContent = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecionando...</title>
+  <title>Escola Digital 3D</title>
   <meta http-equiv="refresh" content="0;url=/" />
-  <script>window.location.href = '/';</script>
+  <script>window.location.replace('/');</script>
 </head>
 <body>
-  <p>Redirecionando...</p>
+  <div id="root">
+    <p>Carregando Escola Digital 3D...</p>
+  </div>
 </body>
 </html>`;
+    }
     
-    fs.writeFileSync(indexFile, redirectHTML, 'utf8');
-    console.log(`✅ Página substituída por redirecionamento.`);
+    fs.writeFileSync(indexFile, newContent);
+    console.log(`✅ Página substituída por versão melhorada com redirecionamento.`);
+  } else {
+    // Mesmo que o build tenha sido bem-sucedido e não tenha referência indesejada,
+    // vamos adicionar um script para garantir que o componente Home seja carregado
+    console.log('Adicionando script de segurança para garantir carregamento da Home...');
+    let content = fs.readFileSync(indexFile, 'utf8');
+    
+    // Adicionar script para garantir redirecionamento se necessário
+    if (!content.includes('window.location.replace')) {
+      content = content.replace(
+        '</head>',
+        `<script>
+          // Script de segurança para garantir carregamento da Home
+          if (window.location.pathname !== '/' && window.location.pathname !== '') {
+            window.location.replace('/');
+          }
+        </script>
+        </head>`
+      );
+      
+      fs.writeFileSync(indexFile, content);
+      console.log('✅ Script de segurança adicionado ao index.html');
+    }
   }
 }
 
