@@ -1,12 +1,16 @@
 [build]
-  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
+  command = "chmod +x ./fix-netlify.cjs && node ./fix-netlify.cjs"
   publish = "dist"
+  ignore_warnings = true
 
 [build.environment]
   ROLLUP_SKIP_NATIVE = "true"
   NODE_OPTIONS = "--max_old_space_size=4096"
   VITE_APP_HOME_PATH = "/client/src/pages/Home.tsx"
   VITE_DEPLOYMENT = "netlify"
+  NODE_ENV = "production"
+  DISABLE_BINARY = "true"
+  npm_config_platform = "linux"
 
 # Configurações para o SPA routing
 # Importante: isso garante que o roteamento do lado do cliente funcione corretamente
