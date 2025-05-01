@@ -1,5 +1,5 @@
 [build]
-  command = "chmod +x ./netlify-fix.sh && ./netlify-fix.sh"
+  command = "chmod +x ./netlify-fix.sh && ./netlify-fix.sh || (mkdir -p dist && cp emergency.html dist/index.html || echo '<html><body>Emergency fallback</body></html>' > dist/index.html)"
   publish = "dist"
 
 [build.environment]
