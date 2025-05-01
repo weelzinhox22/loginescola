@@ -80,6 +80,12 @@
   -webkit-text-fill-color: transparent;
 }
 
+.rainbow-gradient {
+  background: linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF);
+  background-size: 400% 400%;
+  animation: rainbow 8s ease infinite;
+}
+
 @keyframes rainbow {
   0% { background-position: 0% 50% }
   50% { background-position: 100% 50% }
@@ -87,12 +93,54 @@
 }
 
 @keyframes grow {
-  0% { height: 10% }
-  100% { height: 100% }
+  0% { transform: scale(0.5); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes sway {
+  0% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+  100% { transform: rotate(-2deg); }
 }
 
 .plant-container {
   perspective: 1000px;
+}
+
+.plant-animation {
+  transform-origin: bottom center;
+  animation: sway 4s ease-in-out infinite;
+}
+
+.plant-pot {
+  position: relative;
+  width: 120px;
+  height: 100px;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.plant-stem {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 80px;
+  background-color: #228B22;
+  z-index: 10;
+  transform-origin: bottom center;
+}
+
+.plant-leaf {
+  position: absolute;
+  width: 40px;
+  height: 20px;
+  background-color: #32CD32;
+  border-radius: 50%;
+  animation: grow 2s ease-out forwards;
+  z-index: 15;
 }
 
 .bear-container {

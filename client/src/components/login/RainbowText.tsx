@@ -13,3 +13,11 @@ export default function RainbowText({ children, className }: RainbowTextProps) {
     </span>
   );
 }
+
+export function RainbowArc() {
+  return (
+    <div className="relative w-full h-32 mt-4 mb-6 overflow-hidden">
+      <div className="absolute w-[300%] h-48 left-[50%] -translate-x-1/2 rounded-[50%] rainbow-gradient opacity-25" />
+    </div>
+  );
+}

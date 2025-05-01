@@ -1,12 +1,17 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/login/LoginForm";
 import TypewriterTitle from "@/components/login/TypewriterTitle";
 import RainbowText from "@/components/login/RainbowText";
+import { RainbowArc } from "@/components/login/RainbowText";
 import Background from "@/components/3d/Background";
 import Plant from "@/components/3d/Plant";
 import Bear from "@/components/3d/Bear";
+import Plant2D from "@/components/login/Plant2D";
+import Bear2D from "@/components/login/Bear2D";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {

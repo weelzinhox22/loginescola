@@ -44,9 +44,9 @@ export default function TypewriterTitle({
   }, [currentIndex, isTyping, text, speed]);
 
   return (
-    <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4 flex">
+    <h1 className="text-3xl md:text-4xl font-bold text-primary mt-2 mb-1 flex">
       <span>{displayText}</span>
-      <span className={`w-1 h-8 ml-1 bg-primary inline-block ${isTyping ? 'animate-pulse' : 'opacity-0'}`}></span>
+      <span className={`w-1.5 h-8 ml-1 bg-primary inline-block ${isTyping ? 'animate-pulse' : 'opacity-0'}`}></span>
     </h1>
   );
 }
