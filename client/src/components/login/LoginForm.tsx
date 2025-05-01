@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { loginSchema } from "@shared/schema";
 import { z } from "zod";
-import { RoleOption } from "@/components/ui/form-elements";
-import { BookOpen, Users, UserCog } from "lucide-react";
+import { BookOpen, Users, UserCog, Mail, Lock } from "lucide-react";
+import FloatingLabelInput from "./FloatingLabelInput";
+import RadioGroup from "./RadioGroup";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -59,6 +57,24 @@ export default function LoginForm({
     onEmailFocus();
   };
 
+  const roleOptions = [
+    {
+      value: 'professor',
+      label: 'Professor',
+      icon: <BookOpen />
+    },
+    {
+      value: 'coordenador',
+      label: 'Coordenador',
+      icon: <Users />
+    },
+    {
+      value: 'diretor',
+      label: 'Diretor',
+      icon: <UserCog />
+    }
+  ];
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -67,13 +83,23 @@ export default function LoginForm({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-indigo-700 font-medium">Email</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="seu.email@escola.com.br"
-                  {...field}
-                  onFocus={handleEmailFocus}
-                  className="bg-white/80 border-indigo-100 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all rounded-lg py-5"
+                <Controller
+                  name="email"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FloatingLabelInput
+                      id="email"
+                      name="email"
+                      label="Email"
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
+                      onFocus={handleEmailFocus}
+                      icon={<Mail />}
+                    />
+                  )}
                 />
               </FormControl>
               <FormMessage className="text-red-500" />
@@ -86,15 +112,25 @@ export default function LoginForm({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-indigo-700 font-medium">Senha</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Sua senha"
-                  {...field}
-                  onFocus={handlePasswordFocus}
-                  onBlur={handlePasswordBlur}
-                  className="bg-white/80 border-indigo-100 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all rounded-lg py-5"
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FloatingLabelInput
+                      id="password"
+                      name="password"
+                      label="Senha"
+                      type="password"
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
+                      onFocus={handlePasswordFocus}
+                      onBlur={handlePasswordBlur}
+                      icon={<Lock />}
+                    />
+                  )}
                 />
               </FormControl>
               <FormMessage className="text-red-500" />
@@ -103,66 +139,25 @@ export default function LoginForm({
         />
 
         <div className="space-y-4">
-          <FormLabel className="block mb-2 text-indigo-700 font-medium">Selecione seu perfil de acesso</FormLabel>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RoleOption
-                      id="role-professor"
-                      value="professor"
-                      label="Professor"
-                      icon={<BookOpen className="w-5 h-5" />}
-                      checked={field.value === "professor"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RoleOption
-                      id="role-coordenador"
-                      value="coordenador"
-                      label="Coordenador"
-                      icon={<Users className="w-5 h-5" />}
-                      checked={field.value === "coordenador"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RoleOption
-                      id="role-diretor"
-                      value="diretor"
-                      label="Diretor"
-                      icon={<UserCog className="w-5 h-5" />}
-                      checked={field.value === "diretor"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <RadioGroup
+                    id="role"
+                    name="role"
+                    label="Selecione seu perfil de acesso"
+                    options={roleOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    icon={<Users />}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
 
         <FormField
@@ -178,7 +173,7 @@ export default function LoginForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="text-gray-600 font-normal">Lembrar-me neste dispositivo</FormLabel>
+                <label className="text-gray-600 font-normal">Lembrar-me neste dispositivo</label>
               </div>
             </FormItem>
           )}

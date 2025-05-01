@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,7 +18,7 @@ import {
 import { CheckCircle, ArrowLeft, User, Mail, Lock, School, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GradientText, { GradientBackground, GradientCard, GradientDivider } from "@/components/login/RainbowText";
-import AnimatedRegistrationForm from "@/components/login/AnimatedRegistrationForm";
+import RegistrationForm from "@/components/login/AnimatedRegistrationForm";
 
 // Criando um schema para validação de cadastro
 const cadastroSchema = z.object({
@@ -40,6 +40,11 @@ export default function Cadastro() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [_, navigate] = useLocation();
   const { toast } = useToast();
+
+  // Garantir que a página carregue no topo
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const form = useForm<CadastroFormData>({
     resolver: zodResolver(cadastroSchema),
@@ -86,6 +91,45 @@ export default function Cadastro() {
 
   // Handle form submission from the animated form
   const handleAnimatedFormSubmit = (formData: any) => {
+    // Validate the form data manually since we're not using useForm hook
+    const errors: Record<string, string> = {};
+    
+    if (!formData.nome || formData.nome.length < 3) {
+      errors.nome = "Nome deve ter pelo menos 3 caracteres";
+    }
+    
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Email inválido";
+    }
+    
+    if (!formData.password || formData.password.length < 6) {
+      errors.password = "Senha deve ter pelo menos 6 caracteres";
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Senhas não conferem";
+    }
+    
+    if (!formData.escola || formData.escola.length < 3) {
+      errors.escola = "Nome da escola deve ter pelo menos 3 caracteres";
+    }
+    
+    if (!formData.cargo || formData.cargo.length < 2) {
+      errors.cargo = "Cargo é obrigatório";
+    }
+    
+    // If there are any errors, show toast with the first error
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      toast({
+        title: "Erro de validação",
+        description: firstError,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If validation passes, submit the form
     onSubmit(formData);
   };
 
@@ -93,14 +137,16 @@ export default function Cadastro() {
     <div className="min-h-screen w-full bg-slate-50 relative overflow-x-hidden">
       <GradientBackground />
       
-      <div className="container mx-auto px-4 py-8 flex flex-col min-h-screen">
-        <button 
-          onClick={handleVoltar}
-          className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors mb-8 self-start"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Voltar para o login
-        </button>
+      <div className="container mx-auto px-4 py-4 flex flex-col min-h-screen">
+        <div className="sticky top-4 z-10 mb-6">
+          <button 
+            onClick={handleVoltar}
+            className="back-button"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Voltar para o login
+          </button>
+        </div>
         
         <div className="w-full max-w-3xl mx-auto">
           {isSuccess ? (
@@ -115,8 +161,9 @@ export default function Cadastro() {
               
               <Button
                 onClick={handleVoltar}
-                className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white px-8 py-3 rounded-lg shadow-md"
+                className="back-button w-auto px-6 inline-flex items-center shadow-md"
               >
+                <ArrowLeft className="h-5 w-5" />
                 Ir para o Login
               </Button>
             </div>
@@ -134,8 +181,8 @@ export default function Cadastro() {
               
               <GradientDivider className="mb-8" />
               
-              {/* Use our new animated registration form here */}
-              <AnimatedRegistrationForm onSubmit={handleAnimatedFormSubmit} />
+              {/* Use our registration form here */}
+              <RegistrationForm onSubmit={handleAnimatedFormSubmit} />
             </div>
           )}
         </div>

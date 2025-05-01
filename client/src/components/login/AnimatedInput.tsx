@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 
-interface AnimatedInputProps {
+interface FormInputProps {
   id: string;
   name: string;
   label: string;
@@ -12,7 +12,7 @@ interface AnimatedInputProps {
   animationType: 'name' | 'email' | 'password' | 'confirm-password' | 'school' | 'role';
 }
 
-export default function AnimatedInput({
+export default function FormInput({
   id,
   name,
   label,
@@ -22,7 +22,7 @@ export default function AnimatedInput({
   onChange,
   icon,
   animationType
-}: AnimatedInputProps) {
+}: FormInputProps) {
   // Clone the icon element with standard class
   const standardIcon = React.cloneElement(icon as React.ReactElement, {
     className: "h-4 w-4 mr-2 text-indigo-400"

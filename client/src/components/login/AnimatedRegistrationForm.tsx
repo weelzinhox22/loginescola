@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { User, Mail, Lock, School } from 'lucide-react';
-import AnimatedInput from './AnimatedInput';
+import { User, Mail, Lock, School, UserCog, Users, BookOpen } from 'lucide-react';
+import FloatingLabelInput from './FloatingLabelInput';
+import RadioGroup from './RadioGroup';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 
-interface AnimatedRegistrationFormProps {
+interface RegistrationFormProps {
   onSubmit: (formData: FormData) => void;
 }
 
@@ -17,7 +18,7 @@ interface FormData {
   cargo: string;
 }
 
-export default function AnimatedRegistrationForm({ onSubmit }: AnimatedRegistrationFormProps) {
+export default function RegistrationForm({ onSubmit }: RegistrationFormProps) {
   const [_, navigate] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -25,7 +26,7 @@ export default function AnimatedRegistrationForm({ onSubmit }: AnimatedRegistrat
     password: '',
     confirmPassword: '',
     escola: '',
-    cargo: ''
+    cargo: 'professor'
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,77 +46,84 @@ export default function AnimatedRegistrationForm({ onSubmit }: AnimatedRegistrat
     navigate('/');
   };
 
+  const roleOptions = [
+    {
+      value: 'professor',
+      label: 'Professor',
+      icon: <BookOpen />
+    },
+    {
+      value: 'coordenador',
+      label: 'Coordenador',
+      icon: <Users />
+    },
+    {
+      value: 'diretor',
+      label: 'Diretor',
+      icon: <UserCog />
+    }
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <AnimatedInput
-        id="nome-form-item"
+      <FloatingLabelInput
+        id="nome"
         name="nome"
         label="Nome completo"
-        placeholder="Seu nome completo"
         value={formData.nome}
         onChange={handleInputChange}
         icon={<User />}
-        animationType="name"
       />
       
-      <AnimatedInput
-        id="email-form-item"
+      <FloatingLabelInput
+        id="email"
         name="email"
         label="Email"
-        placeholder="seu.email@escola.com.br"
         type="email"
         value={formData.email}
         onChange={handleInputChange}
         icon={<Mail />}
-        animationType="email"
       />
       
       <div className="grid md:grid-cols-2 gap-6">
-        <AnimatedInput
-          id="password-form-item"
+        <FloatingLabelInput
+          id="password"
           name="password"
           label="Senha"
-          placeholder="Crie uma senha segura"
           type="password"
           value={formData.password}
           onChange={handleInputChange}
           icon={<Lock />}
-          animationType="password"
         />
         
-        <AnimatedInput
-          id="confirm-password-form-item"
+        <FloatingLabelInput
+          id="confirmPassword"
           name="confirmPassword"
           label="Confirmar senha"
-          placeholder="Confirme sua senha"
           type="password"
           value={formData.confirmPassword}
           onChange={handleInputChange}
           icon={<Lock />}
-          animationType="confirm-password"
         />
       </div>
       
-      <AnimatedInput
-        id="escola-form-item"
+      <FloatingLabelInput
+        id="escola"
         name="escola"
         label="Instituição de ensino"
-        placeholder="Nome da escola/instituição"
         value={formData.escola}
         onChange={handleInputChange}
         icon={<School />}
-        animationType="school"
       />
       
-      <AnimatedInput
-        id="cargo-form-item"
+      <RadioGroup
+        id="cargo"
         name="cargo"
         label="Cargo/Função"
-        placeholder="Ex: Professor, Coordenador, Diretor"
+        options={roleOptions}
         value={formData.cargo}
         onChange={handleInputChange}
         icon={<User />}
-        animationType="role"
       />
       
       <div className="flex flex-col space-y-2 pt-4">
