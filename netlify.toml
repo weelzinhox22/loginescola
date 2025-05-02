@@ -1,6 +1,6 @@
 [build]
-  # Use the build script defined in package.json
-  command = "npm run build:netlify"
+  # Use npx to run vite directly
+  command = "npx vite build -c vite.config.netlify.js"
   # Specify the directory containing the built site assets
   publish = "dist"
   # Specify the custom vite config file for Netlify build
