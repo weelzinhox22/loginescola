@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: undefined
       },
-      external: ['drizzle-orm', 'drizzle-orm/pg-core']
+      external: ['drizzle-orm', 'drizzle-orm/pg-core', 'drizzle-zod']
     }
   }
 }); 
