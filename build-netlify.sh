@@ -7,24 +7,25 @@ set -e
 # Echo commands as they execute
 set -x
 
-# Display current directory and Vite version for debugging
+# Display current directory for debugging
 pwd
 ls -la
 echo "Node version:"
 node --version
 echo "NPM version:"
 npm --version
-echo "Vite version:"
-npx vite --version
+
+# CRITICAL: Disable Rollup native modules which cause errors on Netlify
+export ROLLUP_NATIVE=false
 
 # Move to client directory
 echo "Changing to client directory"
 cd client
 ls -la
 
-# Build the client application using NPX directly
+# Build the client application using NPX directly with env vars
 echo "Building client application with Vite..."
-npx vite build --outDir ../dist
+ROLLUP_NATIVE=false npx vite build --outDir ../dist
 
 # Return to the root directory
 cd ..

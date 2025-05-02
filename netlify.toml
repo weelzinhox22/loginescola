@@ -4,7 +4,7 @@
   # Output directory
   publish = "dist"
   # Environment variables to help the build
-  environment = { NODE_VERSION = "18" }
+  environment = { NODE_VERSION = "18", ROLLUP_NATIVE = "false", ESBUILD_BINARY_PATH = "node", DISABLE_BINARY = "true" }
 
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
