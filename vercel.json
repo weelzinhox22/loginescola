@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/Sistema.*",
+      "dest": "/",
+      "status": 301
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*\\.[a-z0-9]+)$",
+      "dest": "/$1" 
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "ROLLUP_SKIP_NATIVE": "true",
+    "NODE_OPTIONS": "--max_old_space_size=4096",
+    "VITE_DEPLOYMENT": "vercel"
+  }
+}

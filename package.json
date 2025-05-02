@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "dev:client": "vite",
-    "build": "ROLLUP_SKIP_NATIVE=true vite build",
-    "build:client": "ROLLUP_SKIP_NATIVE=true vite build",
-    "build:netlify": "ROLLUP_SKIP_NATIVE=true vite build",
+    "build": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build",
+    "build:client": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build",
+    "build:netlify": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build",
+    "vercel-build": "node fix-vercel-build.cjs",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push",

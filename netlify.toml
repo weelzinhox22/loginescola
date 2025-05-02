@@ -1,5 +1,5 @@
 [build]
-  command = "chmod +x ./fix-netlify.cjs && node ./fix-netlify.cjs"
+  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
   publish = "dist"
   ignore_warnings = true
 

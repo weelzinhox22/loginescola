@@ -68,7 +68,7 @@ try {
     console.log(`Backup criado: ${rollupNativeFile}.backup`);
   }
 
-  // Criar um arquivo modificado
+  // Criar um arquivo modificado com exportações adequadas
   const fixedContent = `
 // Modified for Netlify deployment to avoid native dependencies issues
 exports.getDefaultDllDir = () => null;
@@ -76,6 +76,12 @@ exports.hasMagic = () => false;
 exports.loadDll = () => null;
 exports.needsDll = () => false;
 exports.relocateDll = () => null;
+// Adicionar exports necessários para ESM imports
+exports.parse = (code, options) => ({ type: 'Program', body: [], sourceType: 'module' });
+exports.parseAsync = async (code, options) => ({ type: 'Program', body: [], sourceType: 'module' });
+exports.xxhashBase64Url = (value) => 'xxhash_' + Buffer.from(value).toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');
+exports.xxhashBase36 = (value) => 'xxh36_' + value.toString(36);
+exports.xxhashBase16 = (value) => 'xxh16_' + value.toString(16);
 `;
 
   fs.writeFileSync(rollupNativeFile, fixedContent, 'utf8');
@@ -84,20 +90,32 @@ exports.relocateDll = () => null;
   console.error(`❌ Erro ao corrigir Rollup: ${error.message}`);
 }
 
-// Criar _redirects específico do Netlify
-try {
-  console.log('Criando arquivo _redirects específico do Netlify...');
-  const redirectsContent = `
-# Arquivo de redirecionamento específico do Netlify
-# Redirecionar páginas com o texto indesejado para raiz
+// Verificar se já existe um arquivo _redirects do cliente
+const clientRedirectsFile = path.join(process.cwd(), 'client', 'public', '_redirects');
+const distRedirectsFile = path.join(process.cwd(), 'dist', '_redirects');
+
+// Criar arquivo _redirects no dist se não existir
+if (!fs.existsSync(clientRedirectsFile)) {
+  console.log('Criando arquivo _redirects padrão...');
+  try {
+    const redirectsContent = `# Redirect Sistema de Gestão Escolar to Home page
 /Sistema* / 301!
-# SPA fallback
-/* /index.html 200
-`;
-  fs.writeFileSync(path.join(process.cwd(), '_redirects'), redirectsContent.trim());
-  console.log('✅ Arquivo _redirects criado com sucesso');
-} catch (error) {
-  console.error(`❌ Erro ao criar arquivo _redirects: ${error.message}`);
+
+# Any path that doesn't exist should go to index.html (SPA routing)
+/* /index.html 200`;
+
+    // Garantir que o diretório dist existe
+    if (!fs.existsSync(path.dirname(distRedirectsFile))) {
+      fs.mkdirSync(path.dirname(distRedirectsFile), { recursive: true });
+    }
+    
+    fs.writeFileSync(distRedirectsFile, redirectsContent);
+    console.log('✅ Arquivo _redirects criado com sucesso na pasta dist');
+  } catch (error) {
+    console.error(`❌ Erro ao criar arquivo _redirects: ${error.message}`);
+  }
+} else {
+  console.log('✅ Usando arquivo _redirects existente do cliente');
 }
 
 // Tentar executar o build
@@ -105,16 +123,19 @@ process.env.ROLLUP_SKIP_NATIVE = 'true';
 process.env.NODE_OPTIONS = '--max_old_space_size=4096';
 
 console.log('Tentando executar build...');
-const buildResult = runCommand('npx vite build --config vite.config.netlify.js');
+const buildResult = runCommand('npx vite build');
 
 // Verificar se o build foi bem-sucedido
 const distDir = path.join(process.cwd(), 'dist');
 const indexFile = path.join(distDir, 'index.html');
 
-// Copiar arquivo _redirects para a pasta dist
+// Copiar arquivo _redirects do cliente para a pasta dist se existir
 try {
-  if (fs.existsSync('_redirects')) {
-    fs.copyFileSync('_redirects', path.join(distDir, '_redirects'));
+  if (fs.existsSync(clientRedirectsFile)) {
+    if (!fs.existsSync(distDir)) {
+      fs.mkdirSync(distDir, { recursive: true });
+    }
+    fs.copyFileSync(clientRedirectsFile, distRedirectsFile);
     console.log('✅ Arquivo _redirects copiado para a pasta dist');
   }
 } catch (error) {
@@ -137,39 +158,14 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
     console.log('Usando client/index.html como base...');
     clientIndexHTML = fs.readFileSync(clientIndexPath, 'utf8');
     
-    // Criar somente o esqueleto, sem scripts de redirecionamento para evitar loops
-    const modifiedHTML = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escola Digital 3D</title>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
-    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
-    .content { text-align: center; margin-top: 2rem; }
-    h1 { color: #4f46e5; }
-    p { line-height: 1.6; color: #333; }
-    a { color: #4f46e5; text-decoration: none; font-weight: bold; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div id="root">
-    <div class="container">
-      <div class="content">
-        <h1>Escola Digital 3D</h1>
-        <p>Bem-vindo à Plataforma Educacional</p>
-        <p>Esta é a página inicial do sistema.</p>
-        <a href="/">Iniciar Aplicação</a>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+    // Modificar o título para garantir consistência
+    const modifiedHTML = clientIndexHTML.replace(
+      /<title>.*?<\/title>/,
+      '<title>Escola Digital 3D</title>'
+    );
     
     fs.writeFileSync(indexFile, modifiedHTML);
-    console.log('✅ Página alternativa simples criada');
+    console.log('✅ Página index.html criada com base no template do cliente');
   } else {
     // Criar uma página HTML simples caso não encontre client/index.html
     const fallbackHTML = `<!DOCTYPE html>
@@ -178,6 +174,7 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Escola Digital 3D</title>
+  <meta name="description" content="Plataforma Educacional Integrada com Interface 3D" />
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
     .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
@@ -189,15 +186,8 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
   </style>
 </head>
 <body>
-  <div id="root">
-    <div class="container">
-      <div class="header">
-        <h1>Escola Digital 3D</h1>
-        <p>Bem-vindo à plataforma educacional</p>
-        <a href="/">Iniciar Aplicação</a>
-      </div>
-    </div>
-  </div>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`;
 
@@ -209,42 +199,34 @@ if (!fs.existsSync(indexFile) || !buildResult.success) {
   
   // Verificar se o conteúdo contém referência indesejada
   const content = fs.readFileSync(indexFile, 'utf8');
-  if (content.includes('Sistema de Gestão Escolar')) {
-    console.log('⚠️ Conteúdo indesejado encontrado. Substituindo...');
+  if (content.includes('<title>Sistema de Gestão Escolar</title>')) {
+    console.log('⚠️ Título indesejado encontrado. Corrigindo...');
     
-    // Criar uma página simples sem scripts de redirecionamento para evitar loops
-    const cleanHTML = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escola Digital 3D</title>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
-    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
-    .content { text-align: center; margin-top: 2rem; }
-    h1 { color: #4f46e5; }
-    p { line-height: 1.6; color: #333; }
-    a { color: #4f46e5; text-decoration: none; font-weight: bold; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div id="root">
-    <div class="container">
-      <div class="content">
-        <h1>Escola Digital 3D</h1>
-        <p>Bem-vindo à Plataforma Educacional</p>
-        <p>Esta é a página inicial do sistema.</p>
-        <a href="/">Iniciar Aplicação</a>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+    // Substituir apenas o título para manter o resto do HTML intacto
+    const fixedContent = content.replace(
+      /<title>Sistema de Gestão Escolar<\/title>/g,
+      '<title>Escola Digital 3D</title>'
+    );
     
-    fs.writeFileSync(indexFile, cleanHTML);
-    console.log(`✅ Página substituída por versão limpa sem redirecionamentos automáticos.`);
+    fs.writeFileSync(indexFile, fixedContent);
+    console.log(`✅ Título corrigido para "Escola Digital 3D"`);
+  }
+}
+
+// Verificar se o arquivo _redirects está na pasta dist
+if (!fs.existsSync(distRedirectsFile)) {
+  console.log('⚠️ Arquivo _redirects não encontrado na pasta dist. Criando...');
+  try {
+    const redirectsContent = `# Redirect Sistema de Gestão Escolar to Home page
+/Sistema* / 301!
+
+# Any path that doesn't exist should go to index.html (SPA routing)
+/* /index.html 200`;
+    
+    fs.writeFileSync(distRedirectsFile, redirectsContent);
+    console.log('✅ Arquivo _redirects criado na pasta dist');
+  } catch (error) {
+    console.error(`❌ Erro ao criar arquivo _redirects: ${error.message}`);
   }
 }
 

@@ -1,0 +1,5 @@
+# Redirect Sistema de Gestão Escolar to Home page
+/Sistema* / 301!
+
+# SPA routing - todas as rotas vão para o index.html
+/* /index.html 200 

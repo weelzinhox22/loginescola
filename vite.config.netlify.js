@@ -3,22 +3,40 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 // Configuração específica para o Netlify
+// Simplificada para evitar problemas com dependências nativas
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
   resolve: {
     alias: {
-      "@": path.resolve(process.cwd(), "client/src"),
-      "@shared": path.resolve(process.cwd(), "shared"),
+      "@": path.resolve("./client/src"),
+      "@shared": path.resolve("./shared"),
+      "@assets": path.resolve("./attached_assets"),
     },
   },
-  root: path.resolve(process.cwd(), "client"),
+  root: "./client",
   build: {
-    outDir: path.resolve(process.cwd(), "dist"),
+    outDir: "../dist",
     emptyOutDir: true,
+    // Usar rollup.browser.js em vez de rollup.node.js
+    rollupOptions: {
+      // Simplificar as opções do Rollup
+      treeshake: true,
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
-  // Definir variáveis de ambiente
-  define: {
-    'process.env.VITE_DEPLOYMENT': JSON.stringify('netlify'),
-    'process.env.VITE_APP_HOME_PATH': JSON.stringify('/client/src/pages/Home.tsx'),
-  }
+  optimizeDeps: {
+    // Excluir todas as dependências que possam usar módulos nativos
+    exclude: ['fsevents', 'esbuild']
+  },
+  esbuild: {
+    // Simplificar a configuração do esbuild
+    legalComments: 'none',
+  },
+  // Desativar SSR, usado apenas no lado do cliente
+  ssr: false,
 }); 
