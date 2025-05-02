@@ -1,28 +1,9 @@
 [build]
-  # Run a very simplified build script
-  base = "client"
-  command = "npm install && npm run build"
-  # Output directory
-  publish = "dist"
-  # Environment variables to help the build
-  environment = { 
-    NODE_VERSION = "18", 
-    ROLLUP_NATIVE = "false", 
-    ESBUILD_BINARY_PATH = "node", 
-    DISABLE_BINARY = "true",
-    # Disable installing Go - we don't need it
-    GO_VERSION = "0",
-    # Disable installing Python - we don't need it
-    PYTHON_VERSION = "0"
-  }
+base = "client"
+command = "npm install && npm run build"
+publish = "dist"
 
-# Disable functions - we don't need them for now
-[functions]
-  included_files = []
-  excluded_files = ["**/*"]
-
-# Redirect all requests to index.html for SPA routing
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200 
