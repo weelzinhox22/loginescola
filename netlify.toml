@@ -1,30 +1,28 @@
 [build]
-  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
+  # Use the build script defined in package.json
+  command = "npm run build:netlify"
+  # Specify the directory containing the built site assets
   publish = "dist"
-  ignore_warnings = true
+  # Specify the custom vite config file for Netlify build
+  # Note: Netlify's build environment might handle this differently,
+  # but explicitly setting NODE_ENV can sometimes help.
+  environment = { NODE_ENV = "production" }
 
-[build.environment]
-  ROLLUP_SKIP_NATIVE = "true"
-  NODE_OPTIONS = "--max_old_space_size=4096"
-  VITE_APP_HOME_PATH = "/client/src/pages/Home.tsx"
-  VITE_DEPLOYMENT = "netlify"
-  NODE_ENV = "production"
-  DISABLE_BINARY = "true"
-  npm_config_platform = "linux"
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  bundle = true
+  minify = true
+[build.processing.js]
+  bundle = true
+  minify = true
+[build.processing.html]
+  pretty_urls = true
+[build.processing.images]
+  compress = true
 
-# Configurações para o SPA routing
-# Isso garante que o roteamento do lado do cliente funcione corretamente
-
-# Redirecionamento de páginas com 'Sistema de Gestão Escolar'
-[[redirects]]
-  from = "/Sistema*"
-  to = "/"
-  status = 301
-  force = true
-
-# Redirecionamento principal para rotas SPA (deve ser o último)
+# Redirect all non-file requests to index.html for client-side routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true 
