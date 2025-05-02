@@ -1,10 +1,24 @@
 [build]
-  # Run our build script
-  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
+  # Run a very simplified build script
+  command = "cd client && npm install && npx vite build --outDir ../dist"
   # Output directory
   publish = "dist"
   # Environment variables to help the build
-  environment = { NODE_VERSION = "18", ROLLUP_NATIVE = "false", ESBUILD_BINARY_PATH = "node", DISABLE_BINARY = "true" }
+  environment = { 
+    NODE_VERSION = "18", 
+    ROLLUP_NATIVE = "false", 
+    ESBUILD_BINARY_PATH = "node", 
+    DISABLE_BINARY = "true",
+    # Disable installing Go - we don't need it
+    GO_VERSION = "0",
+    # Disable installing Python - we don't need it
+    PYTHON_VERSION = "0"
+  }
+
+# Disable functions - we don't need them for now
+[functions]
+  included_files = []
+  excluded_files = ["**/*"]
 
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
