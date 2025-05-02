@@ -20,7 +20,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined
-      }
+      },
+      external: ['drizzle-orm', 'drizzle-orm/pg-core']
     }
   }
 }); 
