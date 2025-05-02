@@ -12,7 +12,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../dist',
+    outDir: './dist',
     emptyOutDir: true,
     // Disable minification in CI environment to speed up build
     minify: process.env.CI ? false : 'esbuild',

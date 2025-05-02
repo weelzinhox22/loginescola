@@ -1,6 +1,7 @@
 [build]
   # Run a very simplified build script
-  command = "cd client && npm install && npm run build"
+  base = "client"
+  command = "npm install && npm run build"
   # Output directory
   publish = "dist"
   # Environment variables to help the build
