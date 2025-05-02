@@ -1,8 +1,10 @@
 [build]
-  # Run our simplified build script
+  # Run our build script
   command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
   # Output directory
   publish = "dist"
+  # Environment variables to help the build
+  environment = { NODE_VERSION = "18" }
 
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
