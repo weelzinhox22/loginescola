@@ -16,13 +16,11 @@ export default defineConfig({
       "@assets": path.resolve("./attached_assets"),
     },
   },
-  root: "./client",
   build: {
-    outDir: "../dist",
+    outDir: "./dist",
     emptyOutDir: true,
-    // Usar rollup.browser.js em vez de rollup.node.js
     rollupOptions: {
-      // Simplificar as opções do Rollup
+      input: path.resolve(__dirname, 'client/index.html'),
       treeshake: true,
       output: {
         manualChunks: undefined,
@@ -30,13 +28,10 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Excluir todas as dependências que possam usar módulos nativos
     exclude: ['fsevents', 'esbuild']
   },
   esbuild: {
-    // Simplificar a configuração do esbuild
     legalComments: 'none',
   },
-  // Desativar SSR, usado apenas no lado do cliente
   ssr: false,
 }); 
