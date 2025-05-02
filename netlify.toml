@@ -1,27 +1,10 @@
 [build]
-  # Use npx to run vite directly
-  command = "npx vite build -c vite.config.netlify.js"
-  # Specify the directory containing the built site assets
+  # Run our simplified build script
+  command = "chmod +x ./build-netlify.sh && ./build-netlify.sh"
+  # Output directory
   publish = "dist"
-  # Specify the custom vite config file for Netlify build
-  # Note: Netlify's build environment might handle this differently,
-  # but explicitly setting NODE_ENV can sometimes help.
-  environment = { NODE_ENV = "production" }
 
-[build.processing]
-  skip_processing = false
-[build.processing.css]
-  bundle = true
-  minify = true
-[build.processing.js]
-  bundle = true
-  minify = true
-[build.processing.html]
-  pretty_urls = true
-[build.processing.images]
-  compress = true
-
-# Redirect all non-file requests to index.html for client-side routing
+# Redirect all requests to index.html for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
