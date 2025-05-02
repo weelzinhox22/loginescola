@@ -13,6 +13,14 @@ export default defineConfig({
   },
   build: {
     outDir: '../dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    // Disable minification in CI environment to speed up build
+    minify: process.env.CI ? false : 'esbuild',
+    // Reduce chunks for better performance
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 }); 
