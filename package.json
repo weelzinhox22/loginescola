@@ -8,7 +8,7 @@
     "dev:client": "vite",
     "build": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build",
     "build:client": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build",
-    "build:netlify": "ROLLUP_SKIP_NATIVE=true DISABLE_BINARY=true vite build -c vite.config.netlify.js",
+    "build:netlify": "vite build -c vite.config.netlify.js",
     "vercel-build": "node fix-vercel-build.cjs",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc",
