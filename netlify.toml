@@ -1,6 +1,6 @@
 [build]
   # Run a very simplified build script
-  command = "cd client && npx vite build --outDir ../dist"
+  command = "cd client && npm install && npx vite build --outDir ../dist"
   # Output directory
   publish = "dist"
   # Environment variables to help the build
