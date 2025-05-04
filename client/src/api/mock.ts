@@ -9,7 +9,9 @@ export interface User {
 const mockUsers: Record<string, { password: string; role: string; name: string }> = {
   "professor@escola.com": { password: "123456", role: "professor", name: "Professor Teste" },
   "coordenador@escola.com": { password: "123456", role: "coordenador", name: "Coordenador Teste" },
-  "diretor@escola.com": { password: "123456", role: "diretor", name: "Diretor Teste" }
+  "diretor@escola.com": { password: "123456", role: "diretor", name: "Diretor Teste" },
+  // Usuário fictício para testes
+  "adminviniwel": { password: "adminviniwel", role: "diretor", name: "Diretor Teste " }
 };
 
 export const mockAuth = {

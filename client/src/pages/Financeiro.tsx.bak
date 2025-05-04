@@ -1,0 +1,1737 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
+  CartesianGrid, Legend, PieChart, Pie, Cell, LineChart, Line 
+} from "recharts";
+import { toast } from "react-hot-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useLocation } from "wouter";
+import { 
+  DollarSign, 
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
+  FileText,
+  Briefcase,
+  Users,
+  Download,
+  Calendar,
+  Receipt,
+  CreditCard,
+  Wallet,
+  BarChart2,
+  PieChart as PieChartIcon,
+  ArrowLeft,
+  LogOut,
+  Search,
+  Filter,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Edit,
+  Trash,
+  Eye,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  User
+} from "lucide-react";
+
+// Dados mock para simulação
+const mockReceitas = [
+  { mes: "Jan", valor: 150000 },
+  { mes: "Fev", valor: 165000 },
+  { mes: "Mar", valor: 180000 },
+  { mes: "Abr", valor: 175000 },
+  { mes: "Mai", valor: 190000 },
+  { mes: "Jun", valor: 185000 },
+];
+
+const mockDespesas = [
+  { mes: "Jan", valor: 120000 },
+  { mes: "Fev", valor: 125000 },
+  { mes: "Mar", valor: 130000 },
+  { mes: "Abr", valor: 128000 },
+  { mes: "Mai", valor: 135000 },
+  { mes: "Jun", valor: 132000 },
+];
+
+const mockCategorias = [
+  { name: "Mensalidades", value: 65 },
+  { name: "Material Didático", value: 15 },
+  { name: "Atividades Extras", value: 10 },
+  { name: "Outros", value: 10 },
+];
+
+const mockMensalidades = [
+  { id: 1, aluno: "João Silva", turma: "9º Ano A", valor: 850, status: "Pago", vencimento: "2024-03-10" },
+  { id: 2, aluno: "Maria Santos", turma: "8º Ano B", valor: 850, status: "Pendente", vencimento: "2024-03-10" },
+  { id: 3, aluno: "Pedro Oliveira", turma: "7º Ano A", valor: 850, status: "Atrasado", vencimento: "2024-02-10" },
+  { id: 4, aluno: "Ana Costa", turma: "9º Ano B", valor: 850, status: "Pago", vencimento: "2024-03-10" },
+];
+
+// Dados mock para inadimplência
+const mockInadimplencia = [
+  { mes: "Jan", taxa: 4.2, valor: 12600 },
+  { mes: "Fev", taxa: 4.5, valor: 13500 },
+  { mes: "Mar", taxa: 5.2, valor: 16200 },
+  { mes: "Abr", taxa: 4.8, valor: 14400 },
+  { mes: "Mai", taxa: 4.3, valor: 13200 },
+  { mes: "Jun", taxa: 5.2, valor: 16800 },
+];
+
+// Dados mock para orçamento
+const mockOrcamento = [
+  { categoria: "Salários", previsto: 620000, realizado: 635000 },
+  { categoria: "Infraestrutura", previsto: 150000, realizado: 142000 },
+  { categoria: "Material Didático", previsto: 85000, realizado: 90000 },
+  { categoria: "Tecnologia", previsto: 95000, realizado: 110000 },
+  { categoria: "Marketing", previsto: 50000, realizado: 46000 },
+  { categoria: "Eventos", previsto: 45000, realizado: 38000 },
+];
+
+// Dados mock para folha de pagamento
+const mockFolhaPagamento = [
+  { cargo: "Professores", total: 430000, funcionarios: 24 },
+  { cargo: "Coordenadores", total: 120000, funcionarios: 4 },
+  { cargo: "Administrativo", total: 85000, funcionarios: 6 },
+  { cargo: "Manutenção", total: 45000, funcionarios: 5 },
+  { cargo: "Direção", total: 70000, funcionarios: 2 },
+];
+
+// Dados para fluxo de caixa
+const mockFluxoCaixa = [
+  { dia: "01/06", entrada: 28500, saida: 12300, saldo: 16200 },
+  { dia: "02/06", entrada: 32100, saida: 8500, saldo: 23600 },
+  { dia: "03/06", entrada: 18700, saida: 14200, saldo: 4500 },
+  { dia: "04/06", entrada: 25800, saida: 9800, saldo: 16000 },
+  { dia: "05/06", entrada: 30200, saida: 15600, saldo: 14600 },
+];
+
+// Dados para contratos
+const mockContratos = [
+  { id: 1, fornecedor: "Editora ABC", tipo: "Material Didático", valor: 85000, vencimento: "2024-12-31" },
+  { id: 2, fornecedor: "Limpeza Total", tipo: "Serviços", valor: 36000, vencimento: "2024-08-15" },
+  { id: 3, fornecedor: "TechSchool", tipo: "Software", valor: 42000, vencimento: "2025-01-10" },
+  { id: 4, fornecedor: "Transporte Seguro", tipo: "Transporte", valor: 56000, vencimento: "2024-07-01" },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const ORCAMENTO_COLORS = { previsto: "#60a5fa", realizado: "#f97316" };
+
+// Simulação de nome do diretor
+const diretorNome = "@...";
+
+export default function Financeiro() {
+  const [section, setSection] = useState("visao");
+  const [selectedPeriod, setSelectedPeriod] = useState("6meses");
+  const [inadimplenciaView, setInadimplenciaView] = useState("tabela");
+  const [orcamentoFilter, setOrcamentoFilter] = useState("all");
+  const [filtroTurma, setFiltroTurma] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroAluno, setFiltroAluno] = useState("");
+  const [location, setLocation] = useLocation();
+
+  // Função para navegar para o dashboard
+  const navegarParaDashboard = () => {
+    setLocation("/dashboard");
+  };
+
+  // Filtrar dados do orçamento
+  const dadosOrcamentoFiltrados = orcamentoFilter === "all" 
+    ? mockOrcamento 
+    : orcamentoFilter === "acima" 
+      ? mockOrcamento.filter(item => item.realizado > item.previsto)
+      : mockOrcamento.filter(item => item.realizado < item.previsto);
+
+  // Filtrar mensalidades
+  const mensalidadesFiltradas = mockMensalidades.filter(
+    m => (!filtroTurma || m.turma.includes(filtroTurma)) && 
+        (!filtroStatus || m.status === filtroStatus) &&
+        (!filtroAluno || m.aluno.toLowerCase().includes(filtroAluno.toLowerCase()))
+  );
+
+  // Animação de cards
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05, duration: 0.3 } })
+  };
+
+  return (
+    <div className="min-h-screen flex bg-gradient-to-br from-indigo-50 to-blue-50">
+      {/* Sidebar animada */}
+      <motion.aside 
+        initial={{ x: -80, opacity: 0 }} 
+        animate={{ x: 0, opacity: 1 }} 
+        transition={{ type: "spring", stiffness: 80 }} 
+        className="w-64 bg-white shadow-xl flex flex-col py-8 px-4 min-h-screen"
+      >
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-indigo-700 mb-2">Gestão Financeira</h2>
+          <p className="text-sm text-gray-500">Escola Digital 3D</p>
+        </div>
+        <nav className="flex flex-col gap-2">
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'visao' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('visao')}
+          >
+            <BarChart2 className="w-5 h-5" /> Visão Geral
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'mensalidades' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('mensalidades')}
+          >
+            <Receipt className="w-5 h-5" /> Mensalidades
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'inadimplencia' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('inadimplencia')}
+          >
+            <AlertCircle className="w-5 h-5" /> Inadimplência
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'orcamento' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('orcamento')}
+          >
+            <Wallet className="w-5 h-5" /> Orçamento Anual
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'folha' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('folha')}
+          >
+            <Users className="w-5 h-5" /> Folha de Pagamento
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'fluxo' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('fluxo')}
+          >
+            <TrendingUp className="w-5 h-5" /> Fluxo de Caixa
+          </button>
+          <button 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${section === 'contratos' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50 text-gray-700'}`} 
+            onClick={() => setSection('contratos')}
+          >
+            <FileText className="w-5 h-5" /> Contratos
+          </button>
+        </nav>
+        <div className="mt-auto pt-8">
+          <a 
+            href="/dashboard" 
+            className="w-full flex gap-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg px-3 py-2 mb-3"
+          >
+            <ArrowLeft className="w-5 h-5" /> Voltar ao Dashboard
+          </a>
+          <button className="w-full flex gap-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg px-3 py-2">
+            <LogOut className="w-5 h-5" /> Sair
+          </button>
+        </div>
+      </motion.aside>
+
+      {/* Conteúdo principal */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        {/* Cabeçalho */}
+        <motion.header 
+          initial={{ opacity: 0, y: -30 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.2 }} 
+          className="mb-8"
+        >
+          <h1 className="text-2xl font-bold text-indigo-800">
+            {section === 'visao' && 'Visão Geral Financeira'}
+            {section === 'mensalidades' && 'Controle de Mensalidades'}
+            {section === 'inadimplencia' && 'Relatórios de Inadimplência'}
+            {section === 'orcamento' && 'Orçamento Anual'}
+            {section === 'folha' && 'Folha de Pagamento'}
+            {section === 'fluxo' && 'Fluxo de Caixa'}
+            {section === 'contratos' && 'Gestão de Contratos'}
+          </h1>
+        </motion.header>
+
+        {/* Conteúdo de cada seção */}
+        <AnimatePresence mode="wait">
+          {/* SEÇÃO: VISÃO GERAL */}
+          {section === 'visao' && (
+            <motion.div
+              key="visao"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Cards de resumo */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <motion.div custom={0} variants={cardVariants} initial="hidden" animate="visible" className="bg-white rounded-xl p-6 shadow-lg">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-green-100">
+                      <DollarSign className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">Receita Total</p>
+                      <p className="text-lg font-semibold text-gray-900">R$ 1.045.000</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div custom={1} variants={cardVariants} initial="hidden" animate="visible" className="bg-white rounded-xl p-6 shadow-lg">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-red-100">
+                      <TrendingDown className="h-6 w-6 text-red-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">Despesa Total</p>
+                      <p className="text-lg font-semibold text-gray-900">R$ 770.000</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div custom={2} variants={cardVariants} initial="hidden" animate="visible" className="bg-white rounded-xl p-6 shadow-lg">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-blue-100">
+                      <TrendingUp className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">Saldo</p>
+                      <p className="text-lg font-semibold text-gray-900">R$ 275.000</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div custom={3} variants={cardVariants} initial="hidden" animate="visible" className="bg-white rounded-xl p-6 shadow-lg">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-yellow-100">
+                      <AlertCircle className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">Inadimplência</p>
+                      <p className="text-lg font-semibold text-gray-900">5.2%</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Gráficos */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Gráfico de Receitas vs Despesas */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Receitas vs Despesas</h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={mockReceitas.map((item, index) => ({
+                          mes: item.mes,
+                          receitas: item.valor,
+                          despesas: mockDespesas[index].valor
+                        }))}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="mes" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                        <Legend />
+                        <Bar dataKey="receitas" name="Receitas" fill="#0088FE" />
+                        <Bar dataKey="despesas" name="Despesas" fill="#FF8042" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+
+                {/* Gráfico de Distribuição de Receitas */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Distribuição de Receitas</h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={mockCategorias}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {mockCategorias.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Principais indicadores */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white rounded-lg shadow p-6"
+              >
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Indicadores Financeiros</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <TrendingUp className="h-5 w-5 text-indigo-600 mr-2" />
+                      <h4 className="font-medium text-indigo-700">Média Mensal</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-indigo-800">R$ 174.200</p>
+                    <p className="text-sm text-indigo-600 mt-1">+5,2% em relação ao ano anterior</p>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <Wallet className="h-5 w-5 text-green-600 mr-2" />
+                      <h4 className="font-medium text-green-700">Rentabilidade</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-green-800">26,3%</p>
+                    <p className="text-sm text-green-600 mt-1">+3,1% em relação ao ano anterior</p>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <Users className="h-5 w-5 text-blue-600 mr-2" />
+                      <h4 className="font-medium text-blue-700">Receita por Aluno</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-800">R$ 856</p>
+                    <p className="text-sm text-blue-600 mt-1">Média mensal</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: MENSALIDADES */}
+          {section === 'mensalidades' && (
+            <motion.div
+              key="mensalidades"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Filtros */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-lg shadow p-4 mb-6"
+              >
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Buscar aluno</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        className="w-full pl-10 pr-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Nome do aluno..."
+                        value={filtroAluno}
+                        onChange={(e) => setFiltroAluno(e.target.value)}
+                      />
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 md:flex-initial w-full md:w-48">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Turma</label>
+                    <select 
+                      className="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={filtroTurma}
+                      onChange={(e) => setFiltroTurma(e.target.value)}
+                    >
+                      <option value="">Todas as turmas</option>
+                      <option value="9º Ano">9º Ano</option>
+                      <option value="8º Ano">8º Ano</option>
+                      <option value="7º Ano">7º Ano</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex-1 md:flex-initial w-full md:w-48">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select 
+                      className="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={filtroStatus}
+                      onChange={(e) => setFiltroStatus(e.target.value)}
+                    >
+                      <option value="">Todos</option>
+                      <option value="Pago">Pagos</option>
+                      <option value="Pendente">Pendentes</option>
+                      <option value="Atrasado">Atrasados</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Estatísticas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <motion.div 
+                  custom={0} 
+                  variants={cardVariants} 
+                  initial="hidden" 
+                  animate="visible" 
+                  className="bg-white rounded-lg shadow p-4"
+                >
+                  <div className="flex items-center mb-1">
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <h3 className="font-medium">Pagos</h3>
+                  </div>
+                  <p className="text-2xl font-bold">
+                    {mockMensalidades.filter(m => m.status === "Pago").length} alunos
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    R$ {mockMensalidades.filter(m => m.status === "Pago").reduce((acc, m) => acc + m.valor, 0).toLocaleString('pt-BR')}
+                  </p>
+                </motion.div>
+                
+                <motion.div 
+                  custom={1} 
+                  variants={cardVariants} 
+                  initial="hidden" 
+                  animate="visible" 
+                  className="bg-white rounded-lg shadow p-4"
+                >
+                  <div className="flex items-center mb-1">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                    <h3 className="font-medium">Pendentes</h3>
+                  </div>
+                  <p className="text-2xl font-bold">
+                    {mockMensalidades.filter(m => m.status === "Pendente").length} alunos
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    R$ {mockMensalidades.filter(m => m.status === "Pendente").reduce((acc, m) => acc + m.valor, 0).toLocaleString('pt-BR')}
+                  </p>
+                </motion.div>
+                
+                <motion.div 
+                  custom={2} 
+                  variants={cardVariants} 
+                  initial="hidden" 
+                  animate="visible" 
+                  className="bg-white rounded-lg shadow p-4"
+                >
+                  <div className="flex items-center mb-1">
+                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    <h3 className="font-medium">Atrasados</h3>
+                  </div>
+                  <p className="text-2xl font-bold">
+                    {mockMensalidades.filter(m => m.status === "Atrasado").length} alunos
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    R$ {mockMensalidades.filter(m => m.status === "Atrasado").reduce((acc, m) => acc + m.valor, 0).toLocaleString('pt-BR')}
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Tabela de Mensalidades */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-lg shadow overflow-hidden"
+              >
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <Receipt className="h-5 w-5 text-indigo-600" /> Lista de Mensalidades
+                  </h3>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => toast.success("Relatório exportado em CSV!")}
+                      className="px-3 py-1.5 text-sm rounded-md bg-green-100 text-green-700 flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" /> Exportar
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Aluno
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Turma
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Valor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Vencimento
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {mensalidadesFiltradas.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                            Nenhuma mensalidade encontrada com os filtros aplicados.
+                          </td>
+                        </tr>
+                      ) : mensalidadesFiltradas.map((mensalidade) => (
+                        <tr key={mensalidade.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {mensalidade.aluno}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {mensalidade.turma}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            R$ {mensalidade.valor.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${mensalidade.status === 'Pago' ? 'bg-green-100 text-green-800' : 
+                                mensalidade.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-red-100 text-red-800'}`}>
+                              {mensalidade.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {format(new Date(mensalidade.vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button
+                              onClick={() => toast.success(`Notificação enviada para ${mensalidade.aluno}!`)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                            >
+                              Notificar
+                            </button>
+                            <button
+                              onClick={() => toast.success(`Mensalidade de ${mensalidade.aluno} registrada como paga!`)}
+                              className={`${mensalidade.status === 'Pago' ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-900'}`}
+                              disabled={mensalidade.status === 'Pago'}
+                            >
+                              {mensalidade.status === 'Pago' ? 'Pago' : 'Marcar pago'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: INADIMPLÊNCIA */}
+          {section === 'inadimplencia' && (
+            <motion.div
+              key="inadimplencia"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-lg shadow overflow-hidden mb-6"
+              >
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-red-500" /> Relatórios de Inadimplência
+                  </h3>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setInadimplenciaView("tabela")}
+                      className={`px-3 py-1.5 text-sm rounded-md ${inadimplenciaView === "tabela" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Tabela
+                    </button>
+                    <button 
+                      onClick={() => setInadimplenciaView("grafico")}
+                      className={`px-3 py-1.5 text-sm rounded-md ${inadimplenciaView === "grafico" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Gráfico
+                    </button>
+                    <button 
+                      onClick={() => toast.success("Relatório exportado!")}
+                      className="px-3 py-1.5 text-sm rounded-md bg-green-100 text-green-700 flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" /> Exportar
+                    </button>
+                  </div>
+                </div>
+
+                {inadimplenciaView === "tabela" ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mês
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Taxa
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Valor (R$)
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {mockInadimplencia.map((item, index) => (
+                          <tr key={index} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {item.mes}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.taxa.toFixed(1)}%
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              R$ {item.valor.toLocaleString('pt-BR')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${item.taxa < 4.5 ? 'bg-green-100 text-green-800' : 
+                                  item.taxa < 5.0 ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-red-100 text-red-800'}`}>
+                                {item.taxa < 4.5 ? 'Dentro do esperado' : 
+                                 item.taxa < 5.0 ? 'Atenção' : 
+                                 'Acima do limite'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-6">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={mockInadimplencia}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="mes" />
+                          <YAxis yAxisId="left" orientation="left" stroke="#8884d8" domain={[0, 10]} />
+                          <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" domain={[0, 30000]} />
+                          <Tooltip />
+                          <Legend />
+                          <Line yAxisId="left" type="monotone" dataKey="taxa" name="Taxa (%)" stroke="#8884d8" activeDot={{ r: 8 }} />
+                          <Line yAxisId="right" type="monotone" dataKey="valor" name="Valor (R$)" stroke="#82ca9d" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Análise e tendências */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-indigo-600" /> Tendências
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-red-100 mr-3 mt-1">
+                        <TrendingUp className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Aumento na inadimplência</h4>
+                        <p className="text-sm text-gray-600">
+                          Nos últimos 3 meses, a taxa de inadimplência subiu em média 0,3% ao mês.
+                          Recomenda-se criar campanha de regularização.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-blue-100 mr-3 mt-1">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Perfil de inadimplentes</h4>
+                        <p className="text-sm text-gray-600">
+                          60% dos inadimplentes possuem mais de um filho na escola. 
+                          Considerar política de descontos para famílias numerosas.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-green-100 mr-3 mt-1">
+                        <Clock className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Período crítico</h4>
+                        <p className="text-sm text-gray-600">
+                          Os meses de Janeiro e Junho apresentam os maiores índices de inadimplência.
+                          Reforçar comunicados nesses períodos.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" /> Ações Recomendadas
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-indigo-50 rounded-lg">
+                      <h4 className="font-medium text-indigo-700 mb-2">Campanha de Regularização</h4>
+                      <p className="text-sm text-indigo-600 mb-3">
+                        Oferecer desconto de 15% para quitação de débitos anteriores.
+                      </p>
+                      <button
+                        onClick={() => toast.success("Campanha agendada para início no próximo mês!")}
+                        className="px-3 py-1.5 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                      >
+                        Agendar campanha
+                      </button>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-700 mb-2">Contato Proativo</h4>
+                      <p className="text-sm text-green-600 mb-3">
+                        Enviar lembretes personalizados 3 dias antes do vencimento.
+                      </p>
+                      <button
+                        onClick={() => toast.success("Sistema de lembretes automáticos ativado!")}
+                        className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                      >
+                        Ativar lembretes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: ORÇAMENTO ANUAL */}
+          {section === 'orcamento' && (
+            <motion.div
+              key="orcamento"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Filtros de orçamento */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-lg shadow p-4 mb-6"
+              >
+                <div className="flex flex-col md:flex-row justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2 mb-3 md:mb-0">
+                    <Wallet className="h-5 w-5 text-indigo-600" /> Orçamento por Categoria
+                  </h3>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setOrcamentoFilter("all")}
+                      className={`px-3 py-1.5 text-sm rounded-md ${orcamentoFilter === "all" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Todos
+                    </button>
+                    <button 
+                      onClick={() => setOrcamentoFilter("acima")}
+                      className={`px-3 py-1.5 text-sm rounded-md ${orcamentoFilter === "acima" ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Acima do orçado
+                    </button>
+                    <button 
+                      onClick={() => setOrcamentoFilter("abaixo")}
+                      className={`px-3 py-1.5 text-sm rounded-md ${orcamentoFilter === "abaixo" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Abaixo do orçado
+                    </button>
+                    <button 
+                      onClick={() => toast.success("Relatório orçamentário exportado!")}
+                      className="px-3 py-1.5 text-sm rounded-md bg-blue-100 text-blue-700 flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" /> Exportar
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Gráfico de orçamento */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-lg shadow overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={dadosOrcamentoFiltrados}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="categoria" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                        <Legend />
+                        <Bar dataKey="previsto" name="Orçado" fill={ORCAMENTO_COLORS.previsto} />
+                        <Bar dataKey="realizado" name="Realizado" fill={ORCAMENTO_COLORS.realizado} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  <div className="mt-6 border-t pt-6">
+                    <h4 className="font-medium text-gray-800 mb-4">Análise de Desempenho</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <div className="font-medium text-blue-700 mb-1">Total Orçado</div>
+                        <div className="text-2xl font-bold text-blue-800">
+                          R$ {mockOrcamento.reduce((acc, item) => acc + item.previsto, 0).toLocaleString('pt-BR')}
+                        </div>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg">
+                        <div className="font-medium text-orange-700 mb-1">Total Realizado</div>
+                        <div className="text-2xl font-bold text-orange-800">
+                          R$ {mockOrcamento.reduce((acc, item) => acc + item.realizado, 0).toLocaleString('pt-BR')}
+                        </div>
+                      </div>
+                      <div className={`${
+                        mockOrcamento.reduce((acc, item) => acc + item.realizado, 0) > 
+                        mockOrcamento.reduce((acc, item) => acc + item.previsto, 0) 
+                        ? 'bg-red-50' : 'bg-green-50'} p-4 rounded-lg`}>
+                        <div className={`font-medium ${
+                          mockOrcamento.reduce((acc, item) => acc + item.realizado, 0) > 
+                          mockOrcamento.reduce((acc, item) => acc + item.previsto, 0) 
+                          ? 'text-red-700' : 'text-green-700'} mb-1`}>
+                          Diferença
+                        </div>
+                        <div className={`text-2xl font-bold ${
+                          mockOrcamento.reduce((acc, item) => acc + item.realizado, 0) > 
+                          mockOrcamento.reduce((acc, item) => acc + item.previsto, 0) 
+                          ? 'text-red-800' : 'text-green-800'}`}>
+                          R$ {Math.abs(mockOrcamento.reduce((acc, item) => acc + item.realizado, 0) - 
+                                      mockOrcamento.reduce((acc, item) => acc + item.previsto, 0)).toLocaleString('pt-BR')}
+                          {mockOrcamento.reduce((acc, item) => acc + item.realizado, 0) > 
+                          mockOrcamento.reduce((acc, item) => acc + item.previsto, 0) 
+                          ? ' (acima)' : ' (abaixo)'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Tabela detalhada */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-lg shadow overflow-hidden"
+              >
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">Detalhamento por Categoria</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Categoria
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Orçado
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Realizado
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Diferença
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {dadosOrcamentoFiltrados.map((item, index) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {item.categoria}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            R$ {item.previsto.toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            R$ {item.realizado.toLocaleString('pt-BR')}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${item.realizado > item.previsto ? 'text-red-600' : 'text-green-600'}`}>
+                            {item.realizado > item.previsto ? '+' : '-'} 
+                            R$ {Math.abs(item.realizado - item.previsto).toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${item.realizado <= item.previsto ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {item.realizado <= item.previsto ? 'Dentro do orçamento' : 'Acima do orçamento'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: FOLHA DE PAGAMENTO */}
+          {section === 'folha' && (
+            <motion.div
+              key="folha"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Resumo da folha */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"
+              >
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="p-3 rounded-full bg-indigo-100">
+                      <Users className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Total de Funcionários</h3>
+                      <p className="text-3xl font-bold text-indigo-700 mt-1">
+                        {mockFolhaPagamento.reduce((acc, item) => acc + item.funcionarios, 0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="p-3 rounded-full bg-green-100">
+                      <DollarSign className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Valor Total da Folha</h3>
+                      <p className="text-3xl font-bold text-green-700 mt-1">
+                        R$ {mockFolhaPagamento.reduce((acc, item) => acc + item.total, 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="p-3 rounded-full bg-blue-100">
+                      <User className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Média por Funcionário</h3>
+                      <p className="text-3xl font-bold text-blue-700 mt-1">
+                        R$ {Math.round(mockFolhaPagamento.reduce((acc, item) => acc + item.total, 0) / 
+                                mockFolhaPagamento.reduce((acc, item) => acc + item.funcionarios, 0)).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Gráfico e detalhamento */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Distribuição por Cargo</h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={mockFolhaPagamento}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={90}
+                          fill="#8884d8"
+                          dataKey="total"
+                          nameKey="cargo"
+                          label={({ cargo, percent }) => `${cargo}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {mockFolhaPagamento.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Detalhamento por Cargo</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Cargo
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Funcionários
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Média
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {mockFolhaPagamento.map((item, index) => (
+                          <tr key={index} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {item.cargo}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.funcionarios}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              R$ {item.total.toLocaleString('pt-BR')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              R$ {Math.round(item.total / item.funcionarios).toLocaleString('pt-BR')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              </div>
+              
+              {/* Informações adicionais */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-lg shadow p-6"
+              >
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Relatórios e Informações Adicionais</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-blue-700 mb-2">Resumo do Mês</h4>
+                    <ul className="text-sm text-blue-600 space-y-1">
+                      <li>• Folha representa 57% do orçamento total</li>
+                      <li>• Aumento médio de 4,2% em relação ao ano anterior</li>
+                      <li>• Próximo reajuste previsto: Janeiro/2025</li>
+                    </ul>
+                    <button 
+                      onClick={() => toast.success("Relatório completo gerado!")}
+                      className="mt-3 px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" /> Exportar relatório
+                    </button>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-green-700 mb-2">Progressão de Carreira</h4>
+                    <ul className="text-sm text-green-600 space-y-1">
+                      <li>• 5 professores com avaliação para promoção</li>
+                      <li>• 2 coordenadores em formação contínua</li>
+                      <li>• 3 administrativos em treinamento</li>
+                    </ul>
+                    <button 
+                      onClick={() => toast.success("Plano de carreira visualizado!")}
+                      className="mt-3 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-1"
+                    >
+                      <Eye className="h-4 w-4" /> Ver plano de carreira
+                    </button>
+                  </div>
+                  
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-indigo-700 mb-2">Próximas Ações</h4>
+                    <ul className="text-sm text-indigo-600 space-y-1">
+                      <li>• Início da avaliação semestral em 15 dias</li>
+                      <li>• Cadastro para benefícios corporativos</li>
+                      <li>• Revisão de cargos e salários</li>
+                    </ul>
+                    <button 
+                      onClick={() => toast.success("Calendário de ações visualizado!")}
+                      className="mt-3 px-3 py-1.5 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 flex items-center gap-1"
+                    >
+                      <Calendar className="h-4 w-4" /> Ver calendário
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: FLUXO DE CAIXA */}
+          {section === 'fluxo' && (
+            <motion.div
+              key="fluxo"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Resumo fluxo */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              >
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-green-100">
+                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Entradas</h3>
+                      <p className="text-3xl font-bold text-green-700 mt-1">
+                        R$ {mockFluxoCaixa.reduce((acc, item) => acc + item.entrada, 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Total acumulado nos últimos 5 dias</p>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-red-100">
+                      <TrendingDown className="h-6 w-6 text-red-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Saídas</h3>
+                      <p className="text-3xl font-bold text-red-700 mt-1">
+                        R$ {mockFluxoCaixa.reduce((acc, item) => acc + item.saida, 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Total acumulado nos últimos 5 dias</p>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-blue-100">
+                      <Wallet className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Saldo</h3>
+                      <p className="text-3xl font-bold text-blue-700 mt-1">
+                        R$ {mockFluxoCaixa.reduce((acc, item) => acc + item.saldo, 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Diferença entre entradas e saídas</p>
+                </div>
+              </motion.div>
+              
+              {/* Gráfico de fluxo */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-lg shadow p-6"
+              >
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Fluxo Diário</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={mockFluxoCaixa}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="dia" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                      <Legend />
+                      <Bar dataKey="entrada" name="Entradas" fill="#4ade80" />
+                      <Bar dataKey="saida" name="Saídas" fill="#f87171" />
+                      <Bar dataKey="saldo" name="Saldo" fill="#60a5fa" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+              
+              {/* Detalhamento do fluxo */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-lg shadow overflow-hidden"
+              >
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900">Detalhamento Diário</h3>
+                  <button 
+                    onClick={() => toast.success("Relatório de fluxo de caixa exportado!")}
+                    className="px-3 py-1.5 text-sm rounded-md bg-blue-100 text-blue-700 flex items-center gap-1"
+                  >
+                    <Download className="h-4 w-4" /> Exportar relatório
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Dia
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Entradas
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Saídas
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Saldo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {mockFluxoCaixa.map((item, index) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {item.dia}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                            + R$ {item.entrada.toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                            - R$ {item.saida.toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <span className={item.saldo >= 0 ? 'text-blue-600' : 'text-red-600'}>
+                              R$ {item.saldo.toLocaleString('pt-BR')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${item.saldo >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {item.saldo >= 0 ? 'Positivo' : 'Negativo'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+
+              {/* Projeções e análises */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-indigo-600" /> Projeções Futuras
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-indigo-700 mb-2">Próximos 30 dias</h4>
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <p className="text-xs text-indigo-600">Entradas</p>
+                          <p className="text-base font-bold text-indigo-800">R$ 280.000</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-indigo-600">Saídas</p>
+                          <p className="text-base font-bold text-indigo-800">R$ 195.000</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-indigo-600">Saldo</p>
+                          <p className="text-base font-bold text-indigo-800">R$ 85.000</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-700 mb-2">Trimestre</h4>
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <p className="text-xs text-blue-600">Entradas</p>
+                          <p className="text-base font-bold text-blue-800">R$ 840.000</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-blue-600">Saídas</p>
+                          <p className="text-base font-bold text-blue-800">R$ 620.000</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-blue-600">Saldo</p>
+                          <p className="text-base font-bold text-blue-800">R$ 220.000</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-indigo-600" /> Análise Estratégica
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-green-100 mr-3 mt-1">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Concentração de receitas</h4>
+                        <p className="text-sm text-gray-600">
+                          70% das receitas são concentradas na primeira semana do mês.
+                          Recomenda-se distribuir campanhas de cobrança.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-red-100 mr-3 mt-1">
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Picos de despesas</h4>
+                        <p className="text-sm text-gray-600">
+                          Despesas concentradas entre os dias 5 e 10 de cada mês.
+                          Considerar renegociação de datas de pagamento.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="p-2 rounded-full bg-blue-100 mr-3 mt-1">
+                        <Wallet className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">Capital de giro</h4>
+                        <p className="text-sm text-gray-600">
+                          O fluxo atual permite manter 2,5 meses de operação sem novas receitas.
+                          Nível considerado adequado para o setor.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* SEÇÃO: CONTRATOS */}
+          {section === 'contratos' && (
+            <motion.div
+              key="contratos"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Resumo contratos */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              >
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-indigo-100">
+                      <FileText className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Total de Contratos</h3>
+                      <p className="text-3xl font-bold text-indigo-700 mt-1">
+                        {mockContratos.length}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Contratos ativos</p>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-green-100">
+                      <DollarSign className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Valor Total</h3>
+                      <p className="text-3xl font-bold text-green-700 mt-1">
+                        R$ {mockContratos.reduce((acc, item) => acc + item.valor, 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Soma dos contratos ativos</p>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-2">
+                    <div className="p-3 rounded-full bg-yellow-100">
+                      <Calendar className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-medium text-gray-900">Renovações</h3>
+                      <p className="text-3xl font-bold text-yellow-700 mt-1">
+                        2
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Contratos a vencer em 90 dias</p>
+                </div>
+              </motion.div>
+              
+              {/* Tabela de contratos */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-lg shadow overflow-hidden"
+              >
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-indigo-600" /> Lista de Contratos
+                  </h3>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => toast.success("Novo contrato pode ser adicionado aqui")}
+                      className="px-3 py-1.5 text-sm rounded-md bg-indigo-100 text-indigo-700 flex items-center gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Novo contrato
+                    </button>
+                    <button 
+                      onClick={() => toast.success("Relatório de contratos exportado!")}
+                      className="px-3 py-1.5 text-sm rounded-md bg-green-100 text-green-700 flex items-center gap-1"
+                    >
+                      <Download className="h-4 w-4" /> Exportar
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fornecedor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Tipo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Valor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Vencimento
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {mockContratos.map((contrato) => {
+                        const dataVencimento = new Date(contrato.vencimento);
+                        const hoje = new Date();
+                        const diasParaVencimento = Math.floor((dataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+                        let status = "Ativo";
+                        let statusClass = "bg-green-100 text-green-800";
+                        
+                        if (diasParaVencimento < 0) {
+                          status = "Vencido";
+                          statusClass = "bg-red-100 text-red-800";
+                        } else if (diasParaVencimento < 30) {
+                          status = "A vencer";
+                          statusClass = "bg-yellow-100 text-yellow-800";
+                        }
+                        
+                        return (
+                          <tr key={contrato.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {contrato.fornecedor}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {contrato.tipo}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              R$ {contrato.valor.toLocaleString('pt-BR')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {format(new Date(contrato.vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}`}>
+                                {status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <button
+                                onClick={() => toast.success("Visualizando contrato")}
+                                className="text-indigo-600 hover:text-indigo-900 mr-3"
+                              >
+                                <Eye className="w-4 h-4 inline" />
+                              </button>
+                              <button
+                                onClick={() => toast.success("Editando contrato")}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                <Edit className="w-4 h-4 inline" />
+                              </button>
+                              <button
+                                onClick={() => toast.success("Contrato pode ser renovado aqui")}
+                                className="text-green-600 hover:text-green-900"
+                              >
+                                Renovar
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+              
+              {/* Análises e gráficos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Distribuição por Tipo</h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={(() => {
+                            // Agrupar contratos por tipo
+                            const tiposAgrupados = mockContratos.reduce((acc, contrato) => {
+                              if (!acc[contrato.tipo]) {
+                                acc[contrato.tipo] = { name: contrato.tipo, value: 0 };
+                              }
+                              acc[contrato.tipo].value += contrato.valor;
+                              return acc;
+                            }, {} as Record<string, { name: string, value: number }>);
+                            
+                            return Object.values(tiposAgrupados);
+                          })()}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={90}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {mockContratos.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Calendário de Renovações</h3>
+                  <div className="space-y-4">
+                    {mockContratos
+                      .sort((a, b) => new Date(a.vencimento).getTime() - new Date(b.vencimento).getTime())
+                      .map(contrato => {
+                        const dataVencimento = new Date(contrato.vencimento);
+                        const hoje = new Date();
+                        const diasParaVencimento = Math.floor((dataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        let statusClass = "bg-green-50 border-green-200";
+                        if (diasParaVencimento < 0) {
+                          statusClass = "bg-red-50 border-red-200";
+                        } else if (diasParaVencimento < 30) {
+                          statusClass = "bg-yellow-50 border-yellow-200";
+                        }
+                        
+                        return (
+                          <div key={contrato.id} className={`p-4 rounded-lg border ${statusClass}`}>
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-medium">{contrato.fornecedor}</h4>
+                              <span className="text-sm">{format(new Date(contrato.vencimento), "dd/MM/yyyy")}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">{contrato.tipo}</p>
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-sm font-medium">R$ {contrato.valor.toLocaleString('pt-BR')}</span>
+                              <span className="text-xs">
+                                {diasParaVencimento < 0 
+                                  ? `Vencido há ${Math.abs(diasParaVencimento)} dias` 
+                                  : `Vence em ${diasParaVencimento} dias`}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+} 

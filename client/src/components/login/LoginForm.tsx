@@ -139,7 +139,7 @@ export default function LoginForm({
             </FormItem>
           )}
         />
-
+{/**
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -161,6 +161,7 @@ export default function LoginForm({
             )}
           />
         </div>
+ */}
 
         <FormField
           control={form.control}

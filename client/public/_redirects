@@ -1,5 +1,5 @@
-# Redirect Sistema de Gestão Escolar to Home page
-/Sistema* / 301!
+# Redirect root to home page
+/ /index.html 200!
 
-# Any path that doesn't exist should go to index.html (SPA routing)
-/* /index.html 200 
+# Redirect all other paths to index.html for SPA routing
+/* /index.html 200! 
